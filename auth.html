@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cogwell — Sign in</title>
+<style>
+  :root{--bg:#ECEFEC;--surface:#FAFBFA;--ink:#12201F;--soft:#586866;--line:#D3DAD6;--brand:#0F5A57;--brand-ink:#fff}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--ink);font:400 14px/1.5 system-ui,sans-serif}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:32px;width:100%;max-width:380px}
+  h1{font-size:20px;margin:0 0 4px}
+  p.sub{color:var(--soft);margin:0 0 22px;font-size:13px}
+  .tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--line)}
+  .tab{flex:1;text-align:center;padding:8px;cursor:pointer;color:var(--soft);border-bottom:2px solid transparent;font-weight:600;font-size:13px}
+  .tab.on{color:var(--brand);border-color:var(--brand)}
+  .field{margin-bottom:14px}
+  label{display:block;font-size:12px;font-weight:600;color:var(--soft);margin-bottom:4px}
+  input{width:100%;font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:5px;background:var(--bg);color:var(--ink)}
+  button{width:100%;background:var(--brand);color:var(--brand-ink);border:0;border-radius:5px;padding:10px;font-weight:600;font-size:14px;cursor:pointer;margin-top:4px}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .msg{margin-top:14px;padding:10px 12px;border-radius:6px;font-size:13px}
+  .msg.ok{background:#DDEEE3;color:#22703F}
+  .msg.err{background:#F5E0DC;color:#A63A2C}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Cogwell</h1>
+  <p class="sub" id="subtitle">Sign in or create your business account.</p>
+
+  <div class="tabs">
+    <div class="tab on" data-mode="signup">Create account</div>
+    <div class="tab" data-mode="login">I already have one</div>
+  </div>
+
+  <form id="authForm">
+    <div class="field" id="orgField">
+      <label for="orgName">Business name</label>
+      <input id="orgName" type="text" placeholder="e.g. Naidoo Plumbing">
+    </div>
+    <div class="field" id="presetField">
+      <label for="presetSelect">Business hours</label>
+      <select id="presetSelect">
+        <option value="standard">Standard (8am–5pm, closed Sundays)</option>
+        <option value="weekdays">Weekdays only (8am–5pm, closed Sat/Sun)</option>
+        <option value="extended">Emergency-ready (7am–7pm, open every day)</option>
+      </select>
+    </div>
+    <div class="field" id="modeField">
+      <label for="modeSelect">Mode</label>
+      <select id="modeSelect">
+        <option value="live">Live — use real dates and times</option>
+        <option value="demo">Demo — explore with a simulated clock</option>
+      </select>
+    </div>
+    <div class="field" id="nameField">
+      <label for="fullName">Your name</label>
+      <input id="fullName" type="text" placeholder="e.g. Ravi Naidoo">
+    </div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" required placeholder="you@business.co.za">
+    </div>
+    <button id="submitBtn" type="submit">Send me a login link</button>
+  </form>
+
+  <div id="msg" class="msg hide"></div>
+</div>
+
+<script type="module">
+  import { supabase } from './supabaseClient.js'
+
+  let mode = 'signup'
+  let inviteToken = new URLSearchParams(window.location.search).get('invite')
+  let inviteInfo = null
+
+  const tabs = document.querySelectorAll('.tab')
+  const orgField = document.getElementById('orgField')
+  const presetField = document.getElementById('presetField')
+  const modeField = document.getElementById('modeField')
+  const nameField = document.getElementById('nameField')
+  const subtitle = document.getElementById('subtitle')
+  const form = document.getElementById('authForm')
+  const msg = document.getElementById('msg')
+  const submitBtn = document.getElementById('submitBtn')
+  const emailInput = document.getElementById('email')
+  const tabsWrap = document.querySelector('.tabs')
+
+  async function initInviteFlow(){
+    const { data, error } = await supabase.rpc('get_invite_info', { p_token: inviteToken })
+    const info = data && data[0]
+    if(error || !info || !info.valid){
+      showMsg("That invite link is invalid or has expired. Ask whoever invited you to send a new one.", false)
+      inviteToken = null
+      return
+    }
+    inviteInfo = info
+    tabsWrap.classList.add('hide')
+    orgField.classList.add('hide')
+    presetField.classList.add('hide')
+    modeField.classList.add('hide')
+    document.getElementById('subtitle').textContent =
+      `You've been invited to join ${info.org_name} as ${info.role}.`
+    emailInput.value = info.email
+    emailInput.disabled = true
+    nameField.classList.remove('hide')
+    submitBtn.textContent = 'Accept invite & sign in'
+  }
+
+  if(inviteToken){
+    initInviteFlow()
+  } else {
+    tabs.forEach(t => t.addEventListener('click', () => {
+      mode = t.dataset.mode
+      tabs.forEach(x => x.classList.toggle('on', x === t))
+      const isSignup = mode === 'signup'
+      orgField.classList.toggle('hide', !isSignup)
+      presetField.classList.toggle('hide', !isSignup)
+      modeField.classList.toggle('hide', !isSignup)
+      nameField.classList.toggle('hide', !isSignup)
+      subtitle.textContent = isSignup
+        ? 'Set up your business account.'
+        : 'Enter the email on your account and we\'ll send a login link.'
+    }))
+  }
+
+  function showMsg(text, ok) {
+    msg.textContent = text
+    msg.className = 'msg ' + (ok ? 'ok' : 'err')
+    msg.classList.remove('hide')
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    submitBtn.disabled = true
+    submitBtn.textContent = 'Sending…'
+
+    const email = document.getElementById('email').value.trim()
+    const orgName = document.getElementById('orgName').value.trim()
+    const fullName = document.getElementById('fullName').value.trim()
+    const preset = document.getElementById('presetSelect').value
+    const bizMode = document.getElementById('modeSelect').value
+
+    const metaData = inviteToken
+      ? { invite_token: inviteToken, name: fullName || email }
+      : (mode === 'signup' ? { org_name: orgName || 'My Business', name: fullName || email, business_preset: preset, mode: bizMode } : undefined)
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        // Where Supabase sends the user back to after they click the link.
+        // Must match a URL you added in Supabase -> URL Configuration -> Redirect URLs
+        emailRedirectTo: window.location.origin + '/index.html',
+        // Only used the FIRST time this email signs up — the handle_new_user
+        // trigger reads org_name/name (or invite_token) from here.
+        data: metaData,
+        shouldCreateUser: inviteToken ? true : mode === 'signup'
+      }
+    })
+
+    submitBtn.disabled = false
+    submitBtn.textContent = inviteToken ? 'Accept invite & sign in' : 'Send me a login link'
+
+    if (error) {
+      showMsg(error.message, false)
+    } else {
+      showMsg('Check your inbox — we sent a link to ' + email + '.', true)
+      if(!inviteToken) form.reset()
+    }
+  })
+
+  // If the user is already logged in (e.g. came back to this page by mistake), send them on.
+  supabase.auth.getSession().then(({ data }) => {
+    if (data.session && !inviteToken) window.location.href = './index.html'
+  })
+</script>
+</body>
+</html>

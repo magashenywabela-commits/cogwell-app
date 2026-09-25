@@ -1,0 +1,7 @@
+{
+  "name": "cogwell",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2"
+  }
+}

@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cogwell Solutions — Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECEFEC; --surface:#FAFBFA; --sunk:#E1E6E2; --ink:#12201F; --soft:#586866; --line:#D3DAD6;
+  --brand:#0F5A57; --brand-ink:#FFFFFF; --brass:#A96F12; --brass-bg:#F6EBD3;
+  --ok:#22703F; --ok-bg:#DDEEE3; --bad:#A63A2C; --bad-bg:#F5E0DC; --info:#2B5E8C; --info-bg:#DEE9F3;
+  --side:#0E2726; --side-ink:#DCE8E5; --side-soft:#8FA9A5;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1817; --surface:#162221; --sunk:#1D2C2B; --ink:#E9F0EE; --soft:#9AAFAB; --line:#2A3D3B;
+    --brand:#4FB8B0; --brand-ink:#0B1615; --brass:#E0AE55; --brass-bg:#31281A;
+    --ok:#6FCB9F; --ok-bg:#1B2C23; --bad:#F0776A; --bad-bg:#2E1E1B; --info:#7EB3DE; --info-bg:#1B2833;
+    --side:#0A1A19; --side-ink:#DCE8E5; --side-soft:#7E9995;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1817; --surface:#162221; --sunk:#1D2C2B; --ink:#E9F0EE; --soft:#9AAFAB; --line:#2A3D3B;
+  --brand:#4FB8B0; --brand-ink:#0B1615; --brass:#E0AE55; --brass-bg:#31281A;
+  --ok:#6FCB9F; --ok-bg:#1B2C23; --bad:#F0776A; --bad-bg:#2E1E1B; --info:#7EB3DE; --info-bg:#1B2833;
+  --side:#0A1A19; --side-ink:#DCE8E5; --side-soft:#7E9995;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.45 'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+h1,h2,h3,.num{font-family:'Bricolage Grotesque','Public Sans',sans-serif}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+.side{background:var(--side);color:var(--side-ink);padding:22px 12px;display:flex;flex-direction:column;gap:2px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh;align-self:start}
+.brand{display:flex;align-items:center;gap:10px;padding:0 10px 22px}
+.cog{width:28px;height:28px;flex:none}
+.brand b{font:700 16px 'Bricolage Grotesque';display:block;line-height:1.1}
+.brand span{font-size:11.5px;color:var(--side-soft)}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:transparent;color:var(--side-ink);padding:9px 10px 9px 12px;border-radius:6px;border-left:3px solid transparent;font-weight:500}
+.nav:hover{background:rgba(255,255,255,.06)}
+.nav.on{background:rgba(255,255,255,.1);border-left-color:#D9A441}
+.nav.sub{color:var(--side-soft);font-size:13px}
+.sep{height:1px;background:rgba(255,255,255,.1);margin:12px 6px}
+.badge{background:#D9A441;color:#1a1408;border-radius:9px;font-size:11px;font-weight:600;padding:1px 7px}
+.badge.red{background:#E5776A;color:#2a0d09}
+.main{min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 24px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.clock{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:var(--soft);font-size:12.5px}
+.clock b{color:var(--ink);font-weight:600;margin-right:4px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:5px;padding:3px 9px;font-size:12px}
+.chip:hover{border-color:var(--brand);color:var(--brand)}
+.chip.on{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.view{padding:24px 24px 70px;max-width:1240px}
+h1{font-size:26px;margin:0 0 2px;font-weight:700;letter-spacing:-.01em}
+.lede{color:var(--soft);margin:0 0 22px;max-width:70ch}
+h2{font-size:16px;margin:0;font-weight:700}
+.btn{background:var(--brand);color:var(--brand-ink);border:0;border-radius:5px;padding:8px 14px;font-weight:600;font-size:13px}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--brand);color:var(--brand)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.danger{background:var(--bad);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:18px}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:13px 18px;border-bottom:1px solid var(--line)}
+.pb{padding:14px 18px}
+.ph p{margin:2px 0 0;color:var(--soft);font-size:12.5px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.cols3{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:12px;font-weight:600;color:var(--soft)}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:7px 9px}
+textarea{resize:vertical;min-height:70px}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.row>.field{flex:1 1 150px}
+.muted{color:var(--soft)}
+.small{font-size:12.5px}
+.empty{color:var(--soft);padding:16px 0;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:600;color:var(--soft);font-size:12px;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.tblwrap{overflow-x:auto}
+.pill{display:inline-block;border-radius:10px;padding:1px 9px;font-size:12px;font-weight:600;background:var(--sunk);color:var(--soft);white-space:nowrap}
+.pill.ok,.pill.confirmed,.pill.accepted,.pill.sent{background:var(--ok-bg);color:var(--ok)}
+.pill.booked,.pill.info{background:var(--info-bg);color:var(--info)}
+.pill.bad,.pill.no_show,.pill.cancelled,.pill.declined,.pill.blocked{background:var(--bad-bg);color:var(--bad)}
+.pill.warn,.pill.held,.pill.urgent{background:var(--brass-bg);color:var(--brass)}
+/* dashboard */
+.today{padding:18px 20px 12px}
+.today-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.today-top h2{font-size:22px}
+.tl-hours{display:grid;grid-template-columns:110px 1fr;font-size:11.5px;color:var(--soft);margin-bottom:4px}
+.tl-hours .scale{display:flex;justify-content:space-between}
+.tl-row{display:grid;grid-template-columns:110px 1fr;align-items:center;margin-bottom:8px}
+.tl-name{font-weight:600;font-size:13px}
+.tl-track{position:relative;height:38px;border-radius:6px;background:repeating-linear-gradient(90deg,var(--sunk) 0,var(--sunk) calc(11.111% - 1px),var(--line) calc(11.111% - 1px),var(--line) 11.111%)}
+.tl-job{position:absolute;top:4px;bottom:4px;border-radius:4px;padding:0 6px;display:flex;align-items:center;font-size:11.5px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:var(--info-bg);color:var(--info);border:1px solid var(--info)}
+.tl-job.confirmed{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+.tl-job.completed{background:var(--sunk);color:var(--soft);border-color:var(--line)}
+.tl-job.no_show{background:var(--bad-bg);color:var(--bad);border-color:var(--bad)}
+.tl-job.emergency{box-shadow:inset 3px 0 0 var(--brass)}
+.tl-now{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--brass)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi{padding:2px 0 2px 14px;border-left:3px solid var(--brand)}
+.kpi .num{font-size:28px;font-weight:700;line-height:1.1}
+.kpi .l{color:var(--soft);font-size:12.5px}
+.att{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.att:last-child{border-bottom:0}
+.att .t{font-weight:600}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--brand);margin-right:10px}
+.dot.hi{background:var(--bad)} .dot.mid{background:var(--brass)}
+.mods{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;margin-bottom:18px}
+.mod{padding:14px 16px;border:0;border-right:1px solid var(--line);background:transparent;text-align:left;color:var(--ink)}
+.mod:last-child{border-right:0}
+.mod:hover{background:var(--sunk)}
+.mod b{font:700 15px 'Bricolage Grotesque';display:block}
+.mod span{color:var(--soft);font-size:12.5px;display:block;margin-top:3px}
+/* messages */
+.msgwrap{display:grid;grid-template-columns:250px 1fr;min-height:420px}
+.threads{border-right:1px solid var(--line);max-height:560px;overflow:auto}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tab{flex:1;padding:9px;border:0;background:transparent;color:var(--soft);font-weight:600;border-bottom:2px solid transparent}
+.tab.on{color:var(--brand);border-bottom-color:var(--brand)}
+.th{padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.th:hover{background:var(--sunk)} .th.on{background:var(--sunk);box-shadow:inset 3px 0 0 var(--brand)}
+.th .n{font-weight:600;display:flex;justify-content:space-between;gap:6px}
+.th .p{color:var(--soft);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.convo{display:flex;flex-direction:column}
+.bubbles{padding:14px 16px;display:flex;flex-direction:column;gap:9px;max-height:380px;overflow:auto;flex:1}
+.b{max-width:78%;padding:8px 11px;border-radius:10px;background:var(--sunk);align-self:flex-start;font-size:13.5px}
+.b.out{align-self:flex-end;background:var(--brand);color:var(--brand-ink)}
+.b.held,.b.blocked{background:transparent;border:1px dashed var(--brass);color:var(--ink)}
+.b.blocked{border-color:var(--bad)}
+.b .meta{font-size:11.5px;opacity:.8;margin-top:3px}
+.b .why{font-size:12px;margin-top:4px;font-weight:600}
+.composer{border-top:1px solid var(--line);padding:12px 16px;background:var(--surface)}
+.gate{font-size:12.5px;margin:6px 0 8px;padding:6px 9px;border-radius:5px;background:var(--ok-bg);color:var(--ok)}
+.gate.hold{background:var(--brass-bg);color:var(--brass)} .gate.block{background:var(--bad-bg);color:var(--bad)}
+.focus{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.fc{border-left:3px solid var(--brass);padding:2px 0 2px 12px}
+.fc .num{font-size:20px;font-weight:700}
+/* calendar */
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 10px;text-align:left;color:var(--ink)}
+.day:hover{border-color:var(--brand)}
+.day.on{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.day.today b{color:var(--brass)}
+.day.closed{opacity:.5}
+.day b{display:block;font-size:13px}
+.day .n{font:700 20px 'Bricolage Grotesque';margin-top:2px}
+.bar{height:5px;border-radius:3px;background:var(--sunk);margin-top:5px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brand)}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.appt{display:grid;grid-template-columns:110px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.appt:last-child{border-bottom:0}
+.appt .tm{font:700 15px 'Bricolage Grotesque'}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.slots{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+/* pipeline */
+.board{display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
+.colm{background:var(--sunk);border-radius:8px;padding:10px;min-height:120px}
+.colm h3{font-size:13.5px;margin:0 0 8px;display:flex;justify-content:space-between}
+.lead{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 10px;margin-bottom:8px}
+.lead .nm{font-weight:600;display:flex;justify-content:space-between;gap:6px}
+.lead select{margin-top:6px;padding:3px 6px;font-size:12px}
+.seq{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.seq:last-child{border-bottom:0}
+.toggle{display:flex;align-items:center;gap:8px;font-size:13px}
+.toggle input{width:auto}
+/* chat widget */
+.chatbox{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg)}
+.chathead{background:var(--brand);color:var(--brand-ink);padding:10px 14px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.chatlog{padding:12px;display:flex;flex-direction:column;gap:8px;height:300px;overflow:auto}
+.chatchips{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px}
+.chatin{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:var(--surface)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:7px;font-weight:600;z-index:20;max-width:90vw}
+.li{display:grid;grid-template-columns:1fr 70px 100px 100px 28px;gap:8px;margin-bottom:6px;align-items:center}
+.xbtn{border:0;background:transparent;color:var(--soft);font-size:16px}
+.totals{text-align:right;margin-top:10px}
+.totals .g{font:700 20px 'Bricolage Grotesque'}
+.consent{display:flex;gap:4px}
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;overflow-x:auto;padding:10px;gap:4px}
+  .brand,.sep{display:none}
+  .nav{white-space:nowrap;width:auto;border-left:0;border-bottom:3px solid transparent}
+  .nav.on{border-bottom-color:#D9A441}
+  .cols,.cols3,.msgwrap,.focus{grid-template-columns:1fr}
+  .kpis,.stats{grid-template-columns:repeat(2,1fr)}
+  .mods{grid-template-columns:1fr 1fr}
+  .mod{border-bottom:1px solid var(--line)}
+  .week{grid-template-columns:repeat(7,minmax(84px,1fr));overflow-x:auto}
+  .threads{border-right:0;border-bottom:1px solid var(--line);max-height:220px}
+  .view{padding:18px 14px 70px}.top{padding:10px 14px}
+  .tl-hours,.tl-row{grid-template-columns:70px 1fr}
+  .appt{grid-template-columns:1fr}.acts{justify-content:flex-start}
+  .li{grid-template-columns:1fr 56px 84px 0 24px}.li input:nth-child(4){display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="side" aria-label="Sections">
+    <div class="brand">
+      <svg class="cog" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="7" fill="none" stroke="#D9A441" stroke-width="3"/><g stroke="#D9A441" stroke-width="4" stroke-linecap="butt"><path d="M16 2v5M16 25v5M2 16h5M25 16h5M6.1 6.1l3.5 3.5M22.4 22.4l3.5 3.5M25.9 6.1l-3.5 3.5M9.6 22.4l-3.5 3.5"/></g></svg>
+      <div><b>Cogwell</b><span>Solutions</span></div>
+    </div>
+    <button class="nav" data-tab="dashboard" onclick="setTab('dashboard')">Dashboard</button>
+    <button class="nav" data-tab="quoting" onclick="setTab('quoting')">Quoting <span class="badge" id="bQuote" hidden></span></button>
+    <button class="nav" data-tab="messages" onclick="setTab('messages')">Messages <span class="badge" id="bMsg" hidden></span></button>
+    <button class="nav" data-tab="calendar" onclick="setTab('calendar')">Calendar</button>
+    <button class="nav" data-tab="pipeline" onclick="setTab('pipeline')">Pipeline <span class="badge" id="bPipe" hidden></span></button>
+    <div class="sep"></div>
+    <button class="nav sub" data-tab="system" onclick="setTab('system')">Settings and rules</button>
+  </nav>
+  <div class="main">
+    <div class="top">
+      <div class="clock"><b id="nowLabel"></b> <span id="clockModeLabel">simulated time</span>
+        <span id="advanceControls">
+        <button class="chip" onclick="advance(2,'h')">+2h</button>
+        <button class="chip" onclick="advance(12,'h')">+12h</button>
+        <button class="chip" onclick="advance(1,'d')">+1 day</button>
+        <button class="chip" onclick="advance(3,'d')">+3 days</button>
+        </span>
+      </div>
+      <div class="clock"><span id="orgLabel"></span> <button class="chip" onclick="logout()">Log out</button> <span id="saveNote"></span></div>
+    </div>
+    <div class="view" id="view"></div>
+    <datalist id="custList"></datalist>
+
+    <!-- ===== AI Insights widget: available on every screen ===== -->
+    <button id="aiToggle" onclick="toggleAI()" style="position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--brand);color:var(--brand-ink);border:0;font-size:20px;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer;z-index:20">✦</button>
+    <div id="aiPanel" style="display:none;position:fixed;bottom:82px;right:20px;width:320px;max-width:calc(100vw - 32px);max-height:60vh;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.3);z-index:20;flex-direction:column;overflow:hidden">
+      <div style="padding:10px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center">
+        <b style="font-size:13px">AI Rep — <span id="aiScreenLabel">Dashboard</span></b>
+        <button class="chip" onclick="toggleAI()">Close</button>
+      </div>
+      <div id="aiLog" style="flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:13px"></div>
+      <div style="padding:8px;border-top:1px solid var(--line);display:flex;gap:6px">
+        <input id="aiInput" placeholder="Ask about this screen…" style="flex:1;font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:5px;background:var(--bg);color:var(--ink)" onkeydown="if(event.key==='Enter'){askAI(this.value); this.value='';}">
+        <button class="btn sm" onclick="askAI(document.getElementById('aiInput').value); document.getElementById('aiInput').value=''">Ask</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ CONSTANTS ============ */
+const KEY = 'cogwell-v3';
+const TYPES = {
+  repair:{label:'Repair',dur:45,tpl:[{desc:'Diagnostic call-out',qty:1,price:450},{desc:'Parts (est.)',qty:1,price:600},{desc:'Labour (1 hr)',qty:1,price:550}]},
+  install:{label:'Install',dur:120,tpl:[{desc:'Equipment / unit',qty:1,price:8500},{desc:'Installation labour (3 hr)',qty:3,price:550},{desc:'Disposal',qty:1,price:350}]},
+  maintenance:{label:'Maintenance',dur:60,tpl:[{desc:'Service visit',qty:1,price:400},{desc:'Filters / consumables',qty:1,price:250},{desc:'Labour (1 hr)',qty:1,price:550}]},
+  emergency:{label:'Emergency',dur:60,tpl:[{desc:'After-hours call-out',qty:1,price:750},{desc:'Labour (1 hr)',qty:1,price:650},{desc:'Priority fee',qty:1,price:300}]}
+};
+const STAGES = [['new','New'],['contacted','Contacted'],['quoted','Quoted'],['booked','Booked'],['completed','Done']];
+const STAGE_W = {new:.35,contacted:.45,quoted:.65,booked:.9};
+const TRANSITIONS = {booked:['confirmed','completed','no_show','cancelled'],confirmed:['completed','no_show','cancelled'],completed:[],no_show:[],cancelled:[]};
+const CH = {SMS:'sms',WhatsApp:'whatsapp',Email:'email'};
+const URGENT = ['leak','no heat','no power','emergency','urgent','flood','burst','sparking','asap','fire','smoke','gas smell','not working'];
+const REMINDERS = [48*60,24*60,2*60];
+const FOLLOWUPS = [1,3,7];
+const NURTURE = [1,3,7];
+const SEQS = [
+  {id:'reminder',name:'Appointment reminders',rule:'48h, 24h and 2h before a booked job. Sent as transactional messages.'},
+  {id:'quote',name:'Quote follow-up',rule:'Day 1, 3 and 7 after a quote is sent. Stops when the quote is accepted or declined.'},
+  {id:'nurture',name:'New lead nurture',rule:'Day 1, 3 and 7 for leads still New or Contacted. Stops once quoted or booked.'},
+  {id:'rebook',name:'Rebooking nudge',rule:'When a customer passes their usual service interval. Marketing, so it needs explicit opt-in.'}
+];
+
+/* ============ UTIL ============ */
+const pad = n => String(n).padStart(2,'0');
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() :
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==='x'?r:(r&0x3|0x8)).toString(16);}));
+const isUUID = v => typeof v==='string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+const dISO = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const isoDate = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
+const fmtMin = m => pad(Math.floor(m/60))+':'+pad(m%60);
+const dayLabel = s => isoDate(s).toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short'});
+const fmtDT = iso => { if(!iso) return '—'; const d=new Date(iso); return d.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short'})+', '+pad(d.getHours())+':'+pad(d.getMinutes()); };
+const money = n => 'R'+Math.round(n).toLocaleString('en-ZA');
+const first = n => (n||'').split(' ')[0];
+const isUrgent = t => { const l=(t||'').toLowerCase(); return URGENT.some(k=>l.includes(k)); };
+function guessType(t){ const l=(t||'').toLowerCase(); if(isUrgent(l)) return 'emergency'; if(/install|replace|new unit|new geyser|upgrade/.test(l)) return 'install'; if(/service|maintenance|annual|check/.test(l)) return 'maintenance'; return 'repair'; }
+function ago(iso){ const h=(now()-new Date(iso))/36e5; if(h<1) return Math.max(1,Math.round(h*60))+' min'; if(h<48) return Math.round(h)+' h'; return Math.round(h/24)+' days'; }
+
+/* ============ STATE ============ */
+function seed(){
+  const t=new Date(); t.setHours(9,0,0,0);
+  const at=(off,h=9,m=0)=>{const d=new Date(t); d.setDate(d.getDate()+off); d.setHours(h,m,0,0); return d;};
+  const day=off=>dISO(at(off));
+  const allIn={sms:'in',whatsapp:'in',email:'in'};
+  return {
+    simNow:t.toISOString(),
+    biz:{name:'Cogwell Solutions',tz:'Africa/Johannesburg',currency:'ZAR',vat:.15,depositRate:.2,workStart:8*60,workEnd:17*60,quietStart:21*60,quietEnd:7*60,buffer:15,speed:32,closedDays:[0]},
+    settings:{autoApprove:false,botReply:true,autoBook:false,seq:{reminder:true,quote:true,nurture:true,rebook:true},
+      features:{aiInsights:true, realMessaging:false}},
+    users:[{id:'u1',name:'Sipho Dlamini',role:'owner'},{id:'u2',name:'Nomsa Peters',role:'office'},{id:'u3',name:'Themba Mokoena',role:'technician'},{id:'u4',name:'Lindiwe Khumalo',role:'technician'}],
+    customers:[
+      {id:'c1',name:'Ravi Naidoo',phone:'+27 82 555 0101',email:'ravi@example.co.za',pref:'WhatsApp',consent:{...allIn},lastInbound:{},avgInterval:120,avgValue:1800,lastRebookAt:null},
+      {id:'c2',name:'Bianca van Wyk',phone:'+27 83 555 0142',email:'bianca@example.co.za',pref:'Email',consent:{sms:'in',whatsapp:'unknown',email:'in'},lastInbound:{},avgInterval:90,avgValue:2200,lastRebookAt:null},
+      {id:'c3',name:'Thandi Mokoena',phone:'+27 71 555 0198',email:'',pref:'WhatsApp',consent:{sms:'unknown',whatsapp:'unknown',email:'unknown'},lastInbound:{WhatsApp:at(0,8,10).toISOString()},avgInterval:180,avgValue:1200,lastRebookAt:null},
+      {id:'c4',name:'Pieter Jacobs',phone:'+27 79 555 0177',email:'pieter@example.co.za',pref:'SMS',consent:{sms:'out',whatsapp:'out',email:'out'},lastInbound:{},avgInterval:365,avgValue:900,lastRebookAt:null}
+    ],
+    jobs:[
+      {id:'j1',customerId:'c1',techId:'u3',date:day(1),startMin:600,durMin:45,type:'repair',dist:9,driveMin:17,status:'booked',remindersSent:[],completedAt:null,quoteId:null},
+      {id:'j3',customerId:'c4',techId:'u4',date:day(0),startMin:13*60,durMin:60,type:'maintenance',dist:6,driveMin:11,status:'confirmed',remindersSent:[],completedAt:null,quoteId:null},
+      {id:'j2',customerId:'c2',techId:'u4',date:day(-14),startMin:540,durMin:60,type:'maintenance',dist:5,driveMin:9,status:'completed',remindersSent:[],completedAt:at(-14,10,0).toISOString(),quoteId:null},
+      {id:'j5',customerId:'c1',techId:'u3',date:day(-130),startMin:540,durMin:60,type:'maintenance',dist:9,driveMin:17,status:'completed',remindersSent:[],completedAt:at(-130,10,0).toISOString(),quoteId:null},
+      {id:'j4',customerId:'c3',techId:'u3',date:day(-200),startMin:600,durMin:45,type:'repair',dist:8,driveMin:15,status:'completed',remindersSent:[],completedAt:at(-200,11,0).toISOString(),quoteId:null}
+    ],
+    quotes:[{id:'q1',customerId:'c2',type:'install',items:TYPES.install.tpl.map(x=>({...x})),version:1,status:'sent',createdAt:at(-4).toISOString(),sentAt:at(-4).toISOString(),followUps:[],isRange:false,leadId:'l2'}],
+    leads:[
+      {id:'l1',customerId:'c3',source:'WhatsApp',stage:'new',note:'Geyser is leaking, can someone come out this week?',urgent:true,type:'emergency',createdAt:at(0,8,10).toISOString(),lastTouch:null,offer:null,quoteRequested:false,nurtured:[]},
+      {id:'l2',customerId:'c2',source:'Web chat',stage:'quoted',note:'Wants a new unit installed',urgent:false,type:'install',createdAt:at(-6).toISOString(),lastTouch:at(-4).toISOString(),offer:null,quoteRequested:true,nurtured:[]}
+    ],
+    messages:[
+      {id:'m1',thread:'customer',customerId:'c3',dir:'in',channel:'WhatsApp',subject:'',body:'Hi, my geyser is leaking, can someone come out this week?',at:at(0,8,10).toISOString(),status:'received',read:false},
+      {id:'m2',thread:'staff',userId:'u3',dir:'out',channel:'Internal',subject:'',body:'Ravi Naidoo is booked with you tomorrow at 10:00. Parts are at the depot.',at:at(-1,16,0).toISOString(),status:'sent',read:true}
+    ],
+    queue:[],
+    events:[]
+  };
+}
+let state = load();
+function load(){ try{ const r=localStorage.getItem(KEY); if(r) return JSON.parse(r); }catch(e){} return seed(); }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} scheduleSync(); }
+let syncTimer=null;
+function scheduleSync(){
+  if(!supabase||!orgId) return; // not logged in yet, or still loading
+  setSaveNote('Saving…');
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(syncToCloud, 800); // wait for a pause before pushing to the cloud
+}
+function setSaveNote(t){ const e=document.getElementById('saveNote'); if(e) e.textContent=t; }
+const now = () => new Date(state.simNow);
+const nowMin = () => { const d=now(); return d.getHours()*60+d.getMinutes(); };
+const todayISO = () => dISO(now());
+const cust = id => state.customers.find(c=>c.id===id);
+const user = id => state.users.find(u=>u.id===id);
+const techs = () => state.users.filter(u=>u.role==='technician');
+const custName = id => cust(id)?.name || 'Unknown';
+function emit(type,text,ref){ state.events.unshift({id:uid('e'),at:state.simNow,type,text,ref:ref||null}); state.events=state.events.slice(0,150); }
+function toast(t){ const e=document.createElement('div'); e.className='toast'; e.textContent=t; document.body.appendChild(e); setTimeout(()=>e.remove(),2800); }
+let armed=null;
+function arm(key,fn){ if(armed===key){ armed=null; fn(); } else { armed=key; render(); setTimeout(()=>{ if(armed===key){ armed=null; render(); } },4000); } }
+const armLabel=(key,a,b)=>armed===key?b:a;
+
+/* ============ CUSTOMERS ============ */
+function findOrCreate(name,contact){
+  name=(name||'').trim(); let c=state.customers.find(c=>c.name.toLowerCase()===name.toLowerCase());
+  if(!c){ c={id:uid('c'),name,phone:'',email:'',pref:'SMS',consent:{sms:'unknown',whatsapp:'unknown',email:'unknown'},lastInbound:{},avgInterval:120,avgValue:1500,lastRebookAt:null}; state.customers.push(c); }
+  if(contact?.phone && !c.phone){ c.phone=contact.phone; c.pref=c.pref||'SMS'; }
+  if(contact?.email && !c.email){ c.email=contact.email; if(!contact.phone) c.pref='Email'; }
+  return c;
+}
+
+/* ============ COMPLIANCE GATE (every outbound message passes here) ============ */
+function inQuiet(d){ const m=d.getHours()*60+d.getMinutes(); const {quietStart:s,quietEnd:e}=state.biz; return s>e ? (m>=s||m<e) : (m>=s&&m<e); }
+function nextQuietEnd(d){ const t=new Date(d); const e=state.biz.quietEnd; t.setHours(Math.floor(e/60),e%60,0,0); if(t<=d) t.setDate(t.getDate()+1); return t; }
+/* kind: reply (answering an inbound), transactional (bookings, reminders, quotes), marketing (rebooking etc.) */
+function gate(custId,channel,kind){
+  const c=cust(custId); if(!c) return {action:'block',reason:'Unknown recipient'};
+  const k=CH[channel];
+  if(c.consent[k]==='out') return {action:'block',reason:first(c.name)+' opted out of '+channel};
+  if(channel==='Email' && !c.email) return {action:'block',reason:'No email address on file'};
+  if(channel!=='Email' && !c.phone) return {action:'block',reason:'No phone number on file'};
+  if(kind==='marketing' && c.consent[k]!=='in') return {action:'block',reason:'No '+channel+' opt-in. Marketing needs explicit consent.'};
+  let template=false;
+  if(channel==='WhatsApp'){ const li=c.lastInbound?.WhatsApp; if(!(li && (now()-new Date(li))<864e5)) template=true; }
+  const note = template ? 'Outside the 24h WhatsApp window, so an approved template is sent instead of free text.' : '';
+  if(kind!=='reply' && inQuiet(now())) return {action:'hold',reason:'Quiet hours. Held until '+fmtMin(state.biz.quietEnd)+'.',sendAt:nextQuietEnd(now()).toISOString(),template};
+  return {action:'send',reason:note,template};
+}
+function sendOut({custId,channel,kind,body,subject,tag}){
+  const g=gate(custId,channel,kind);
+  const m={id:uid('m'),thread:'customer',customerId:custId,dir:'out',channel,subject:subject||'',body,at:state.simNow,status:g.action==='send'?'sent':g.action==='hold'?'held':'blocked',reason:g.reason||'',template:!!g.template,sendAt:g.sendAt||null,kind,tag:tag||'',read:true};
+  state.messages.push(m);
+  const nm=custName(custId);
+  if(g.action==='send'){ emit('MessageSent',channel+' to '+nm+(tag?' ('+tag+')':'')); const l=openLead(custId); if(l){ l.lastTouch=state.simNow; if(l.stage==='new') l.stage='contacted'; } }
+  else if(g.action==='hold') emit('MessageHeld',channel+' to '+nm+' held: '+g.reason);
+  else emit('MessageBlocked',channel+' to '+nm+' blocked: '+g.reason);
+  return {...g,msg:m};
+}
+function releaseHeld(){
+  state.messages.filter(m=>m.status==='held' && m.sendAt && new Date(m.sendAt)<=now()).forEach(m=>{
+    const g=gate(m.customerId,m.channel,'reply'); // quiet hours have ended, consent is re-checked
+    if(g.action==='block'){ m.status='blocked'; m.reason=g.reason; emit('MessageBlocked','Held '+m.channel+' to '+custName(m.customerId)+' blocked on release: '+g.reason); }
+    else { m.status='sent'; m.sentAt=state.simNow; m.reason=''; emit('MessageSent','Held '+m.channel+' to '+custName(m.customerId)+' released'); }
+  });
+}
+function receive(custId,channel,body){
+  const c=cust(custId); if(!c) return;
+  c.lastInbound=c.lastInbound||{}; c.lastInbound[channel]=state.simNow;
+  state.messages.push({id:uid('m'),thread:'customer',customerId:custId,dir:'in',channel,subject:'',body,at:state.simNow,status:'received',read:false});
+  if(/\bstop\b/i.test(body)){ c.consent={sms:'out',whatsapp:'out',email:'out'}; emit('OptOut',c.name+' replied STOP. Opted out of all channels.'); return; }
+  if(/\b(yes|confirm|confirmed)\b/i.test(body)){
+    const j=state.jobs.find(j=>j.customerId===custId && j.status==='booked' && j.date>=todayISO());
+    if(j){ transition(j.id,'confirmed',true); sendOut({custId,channel,kind:'reply',body:'Thanks. Your '+TYPES[j.type].label.toLowerCase()+' on '+dayLabel(j.date)+' at '+fmtMin(j.startMin)+' is confirmed.',tag:'confirmation'}); return; }
+    const l=openLead(custId);
+    if(l?.offer && state.settings.botReply){ const o=l.offer; l.offer=null; const job=createJob({custId,techId:o.techId,date:o.date,startMin:o.startMin,type:l.type||'repair',dist:10,source:'bot'}); if(job) return; }
+  }
+  handleInboundLead(custId,channel,body);
+}
+function handleInboundLead(custId,channel,body){
+  let l=openLead(custId);
+  if(!l) l=createLead({custId,source:channel,note:body,urgent:isUrgent(body),type:guessType(body)});
+  else { if(isUrgent(body)) l.urgent=true; }
+  if(/\bquote\b/i.test(body)) l.quoteRequested=true;
+  if(!state.settings.botReply || upcomingFor(custId)) return;
+  const first_=first(custName(custId));
+  const slots=findSlots(l.type||'repair',10,{urgent:l.urgent});
+  if(state.settings.autoBook && slots[0]){
+    const s=slots[0]; createJob({custId,techId:s.techId,date:s.date,startMin:s.startMin,type:l.type||'repair',dist:10,source:'bot'});
+    sendOut({custId,channel,kind:'reply',body:'Thanks '+first_+'. I have booked you for '+dayLabel(s.date)+' at '+fmtMin(s.startMin)+'. Reply here if you need to change it.',tag:'bot booking'});
+  } else if(slots[0]){
+    l.offer=slots[0];
+    sendOut({custId,channel,kind:'reply',body:'Thanks '+first_+', we got your message. The earliest opening is '+dayLabel(slots[0].date)+' at '+fmtMin(slots[0].startMin)+'. Reply YES and I will book it.',tag:'bot reply'});
+  } else sendOut({custId,channel,kind:'reply',body:'Thanks '+first_+', we got your message. Someone from the team will be in touch shortly.',tag:'bot reply'});
+}
+
+/* ============ LEADS ============ */
+const openLead = custId => state.leads.filter(l=>l.customerId===custId && !['completed','lost'].includes(l.stage)).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))[0];
+function createLead({custId,source,note,urgent,type}){
+  const l={id:uid('l'),customerId:custId,source,stage:'new',note:note||'',urgent:!!urgent,type:type||'repair',createdAt:state.simNow,lastTouch:null,offer:null,quoteRequested:false,nurtured:[]};
+  state.leads.push(l); emit('LeadCreated',custName(custId)+' from '+source+(urgent?' (urgent)':''),l.id); return l;
+}
+function moveLead(id,stage){
+  const l=state.leads.find(l=>l.id===id); if(!l) return;
+  if(stage==='lost'){
+    const reasons=['Priced too high','Chose competitor','Timing','Ghosted','Other'];
+    const pick=prompt('Why was this lead lost? ('+reasons.join(' / ')+')');
+    if(!pick||!pick.trim()){ render(); return; } // cancelled — leave the stage unchanged
+    l.lossReason=reasons.find(r=>r.toLowerCase()===pick.trim().toLowerCase())||pick.trim();
+  } else { l.lossReason=null; }
+  l.stage=stage; l.lastTouch=state.simNow; save(); render();
+}
+const upcomingFor = custId => state.jobs.find(j=>j.customerId===custId && ['booked','confirmed'].includes(j.status) && j.date>=todayISO());
+
+/* ============ CALENDAR / JOB LIFECYCLE ============ */
+const jobsFor=(techId,date,exclude)=>state.jobs.filter(j=>j.techId===techId&&j.date===date&&!['cancelled'].includes(j.status)&&j.id!==exclude).sort((a,b)=>a.startMin-b.startMin);
+const driveMin=km=>Math.round(km/state.biz.speed*60);
+function slotsFor(techId,date,type,dist,exclude){
+  const d=isoDate(date); if(state.biz.closedDays.includes(d.getDay())) return [];
+  const dur=TYPES[type].dur, drive=driveMin(dist), buf=state.biz.buffer+(type==='emergency'?15:0);
+  const others=jobsFor(techId,date,exclude).map(j=>[j.startMin-(j.driveMin||0)-state.biz.buffer,j.startMin+j.durMin]);
+  const out=[];
+  for(let s=state.biz.workStart+drive;s+dur<=state.biz.workEnd;s+=15){
+    if(date===todayISO() && s<nowMin()+30) continue;
+    const a=s-drive-buf,b=s+dur;
+    if(others.every(([x,y])=>b<=x||a>=y)) out.push(s);
+  }
+  return out;
+}
+function findSlots(type,dist,opts){
+  const res=[]; const start=new Date(now()); start.setHours(0,0,0,0);
+  for(let i=0;i<14&&res.length<12;i++){ const d=new Date(start); d.setDate(d.getDate()+i); const ds=dISO(d);
+    techs().forEach(t=>slotsFor(t.id,ds,type,dist).slice(0,3).forEach(s=>res.push({techId:t.id,date:ds,startMin:s}))); }
+  res.sort((a,b)=>a.date===b.date?a.startMin-b.startMin:a.date<b.date?-1:1);
+  const seen=new Set(), out=[]; res.forEach(s=>{ const k=s.date+s.startMin; if(!seen.has(k)){ seen.add(k); out.push(s); } });
+  return out.slice(0,6);
+}
+function createJob({custId,techId,date,startMin,type,dist,source,quoteId}){
+  if(!slotsFor(techId,date,type,dist||10).includes(startMin)){ toast('That slot is no longer free.'); return null; }
+  const j={id:uid('j'),customerId:custId,techId,date,startMin,durMin:TYPES[type].dur,type,dist:dist||10,driveMin:driveMin(dist||10),status:'booked',remindersSent:[],completedAt:null,quoteId:quoteId||null};
+  state.jobs.push(j); emit('JobBooked',custName(custId)+', '+TYPES[type].label+' on '+dayLabel(date)+' at '+fmtMin(startMin)+(source?' ('+source+')':''),j.id);
+  const l=openLead(custId); if(l){ l.stage='booked'; l.offer=null; }
+  const c=cust(custId);
+  sendOut({custId,channel:c.pref,kind:'transactional',subject:'Your booking with '+state.biz.name,body:'Hi '+first(c.name)+', you are booked for '+dayLabel(date)+' at '+fmtMin(startMin)+' with '+first(user(techId).name)+'. Reply YES to confirm.',tag:'booking confirmation'});
+  return j;
+}
+function transition(id,to,silent){
+  const j=state.jobs.find(j=>j.id===id); if(!j) return false;
+  if(!TRANSITIONS[j.status].includes(to)){ toast('A '+j.status.replace('_',' ')+' job cannot become '+to.replace('_',' ')+'.'); return false; }
+  const start=new Date(isoDate(j.date)); start.setMinutes(j.startMin);
+  if((to==='completed'||to==='no_show') && start>now()){ toast('This job has not started yet. Advance the clock first.'); return false; }
+  j.status=to;
+  const c=cust(j.customerId);
+  if(to==='completed'){ j.completedAt=state.simNow; emit('JobCompleted',c.name+', '+TYPES[j.type].label,j.id); const l=state.leads.find(l=>l.customerId===j.customerId&&l.stage==='booked'); if(l) l.stage='completed'; }
+  if(to==='no_show') emit('JobNoShow',c.name+' did not show on '+dayLabel(j.date),j.id);
+  if(to==='cancelled'){ emit('JobCancelled',c.name+', '+dayLabel(j.date)+' at '+fmtMin(j.startMin),j.id); sendOut({custId:j.customerId,channel:c.pref,kind:'transactional',subject:'Your booking was cancelled',body:'Hi '+first(c.name)+', your booking on '+dayLabel(j.date)+' at '+fmtMin(j.startMin)+' has been cancelled. Reply here to rebook.',tag:'cancellation'}); }
+  if(to==='confirmed') emit('JobConfirmed',c.name+' confirmed '+dayLabel(j.date),j.id);
+  save(); if(!silent) render(); return true;
+}
+function rescheduleJob(id,date,start){
+  const j=state.jobs.find(j=>j.id===id); if(!j||!TRANSITIONS[j.status].length) return;
+  if(!slotsFor(j.techId,date,j.type,j.dist,j.id).includes(start)){ toast('That slot is not free.'); return; }
+  j.date=date; j.startMin=start; j.status='booked'; j.remindersSent=[]; resched=null;
+  const c=cust(j.customerId);
+  emit('JobRescheduled',c.name+' moved to '+dayLabel(date)+' at '+fmtMin(start),j.id);
+  sendOut({custId:j.customerId,channel:c.pref,kind:'transactional',subject:'Your booking was moved',body:'Hi '+first(c.name)+', your booking is now '+dayLabel(date)+' at '+fmtMin(start)+'. Reply YES to confirm.',tag:'reschedule'});
+  save(); render();
+}
+
+/* ============ QUOTES ============ */
+const quoteSub=q=>q.items.reduce((s,i)=>s+i.qty*i.price,0);
+const quoteTotal=q=>quoteSub(q)*(1+state.biz.vat);
+const quoteText=q=>q.isRange?money(quoteTotal(q)*.85)+' to '+money(quoteTotal(q)*1.15):money(quoteTotal(q));
+function deliverQuote(q,channel){
+  const c=cust(q.customerId);
+  const r=sendOut({custId:q.customerId,channel,kind:'transactional',subject:'Your quote from '+state.biz.name+' (v'+q.version+')',body:'Hi '+first(c.name)+', your '+TYPES[q.type].label.toLowerCase()+' quote (v'+q.version+') is '+quoteText(q)+' incl. VAT. A deposit of '+money(quoteTotal(q)*state.biz.depositRate)+' secures your slot.',tag:'quote'});
+  return r;
+}
+
+/* ============ SEQUENCES (Pipeline automation) ============ */
+function enqueue(key,seq,custId,relatedId,body,subject,kind){
+  if(state.queue.some(e=>e.key===key)) return;
+  const e={id:uid('sq'),key,seq,customerId:custId,relatedId,body,subject:subject||'',kind,status:'pending',createdAt:state.simNow,outcome:null,reason:''};
+  state.queue.push(e); if(state.settings.autoApprove) approveEntry(e.id,true);
+}
+function approveEntry(id,silent){
+  const e=state.queue.find(e=>e.id===id); if(!e) return;
+  const c=cust(e.customerId); if(!c){ e.status='done'; e.outcome='block'; e.reason='Customer removed'; return; }
+  const r=sendOut({custId:e.customerId,channel:c.pref,kind:e.kind,body:e.body,subject:e.subject,tag:SEQS.find(s=>s.id===e.seq)?.name});
+  e.status=r.action==='block'?'blocked':'done'; e.outcome=r.action; e.reason=r.reason; e.resolvedAt=state.simNow;
+  if(r.action!=='block'){
+    if(e.seq==='reminder'){ const j=state.jobs.find(j=>j.id===e.relatedId); if(j) j.remindersSent.push(Number(e.key.split(':')[2])); }
+    if(e.seq==='quote'){ const q=state.quotes.find(q=>q.id===e.relatedId); if(q) q.followUps.push(state.simNow); }
+    if(e.seq==='nurture'){ const l=state.leads.find(l=>l.id===e.relatedId); if(l) l.nurtured.push(state.simNow); }
+    if(e.seq==='rebook') c.lastRebookAt=state.simNow;
+  }
+  if(!silent){ save(); render(); }
+}
+function retryEntry(id){ const e=state.queue.find(e=>e.id===id); if(e){ e.status='pending'; approveEntry(id); } }
+function discardEntry(id){ state.queue=state.queue.filter(e=>e.id!==id); save(); render(); }
+function approveAll(){ state.queue.filter(e=>e.status==='pending').forEach(e=>approveEntry(e.id,true)); save(); render(); }
+function dormant(){
+  return state.customers.map(c=>{
+    const done=state.jobs.filter(j=>j.customerId===c.id&&j.status==='completed').sort((a,b)=>new Date(b.completedAt)-new Date(a.completedAt));
+    if(!done.length||upcomingFor(c.id)) return null;
+    const due=new Date(done[0].completedAt); due.setDate(due.getDate()+c.avgInterval);
+    return due<now()?{c,last:done[0],due}:null;
+  }).filter(Boolean);
+}
+function scan(){
+  releaseHeld();
+  const S=state.settings.seq;
+  if(S.reminder) state.jobs.filter(j=>['booked','confirmed'].includes(j.status)).forEach(j=>{
+    const st=new Date(isoDate(j.date)); st.setMinutes(j.startMin); if(st<=now()) return;
+    const due=REMINDERS.filter(o=>now()>=new Date(st.getTime()-o*6e4)); if(!due.length) return;
+    const o=Math.min(...due); const c=cust(j.customerId);
+    REMINDERS.filter(x=>x>o&&!j.remindersSent.includes(x)).forEach(x=>j.remindersSent.push(x));
+    enqueue('rem:'+j.id+':'+o,'reminder',j.customerId,j.id,'Reminder: your '+TYPES[j.type].label.toLowerCase()+' visit is '+dayLabel(j.date)+' at '+fmtMin(j.startMin)+' with '+first(user(j.techId).name)+'. Reply YES to confirm.','Appointment reminder','transactional');
+  });
+  if(S.quote) state.quotes.filter(q=>q.status==='sent').forEach(q=>{
+    const days=(now()-new Date(q.sentAt))/864e5;
+    if(days>=7){ q.status='expired'; emit('QuoteExpired',custName(q.customerId)+"'s "+TYPES[q.type].label.toLowerCase()+' quote expired after 7 days with no response',q.id); return; }
+    const n=q.followUps.length; if(n>=FOLLOWUPS.length||days<FOLLOWUPS[n]) return;
+    enqueue('qf:'+q.id+':'+n,'quote',q.customerId,q.id,'Hi '+first(custName(q.customerId))+', just checking in on your '+TYPES[q.type].label.toLowerCase()+' quote of '+quoteText(q)+'. Happy to answer any questions.','Following up on your quote','transactional');
+  });
+  if(S.nurture) state.leads.filter(l=>['new','contacted'].includes(l.stage)).forEach(l=>{
+    const days=(now()-new Date(l.createdAt))/864e5; const n=l.nurtured.length; if(n>=NURTURE.length||days<NURTURE[n]) return;
+    enqueue('nu:'+l.id+':'+n,'nurture',l.customerId,l.id,'Hi '+first(custName(l.customerId))+', following up on your enquiry. Would you like us to book a visit or send a quote?','Following up on your enquiry','transactional');
+  });
+  if(S.rebook) dormant().forEach(d=>{
+    if(d.c.lastRebookAt && (now()-new Date(d.c.lastRebookAt))/864e5<90) return;
+    enqueue('rb:'+d.c.id+':'+d.last.id,'rebook',d.c.id,d.c.id,'Hi '+first(d.c.name)+', it is about time for your next service. Want us to pencil you in?','Time for your next service','marketing');
+  });
+  save();
+}
+
+/* ============ AI REP INSIGHTS ============ */
+function lastMsg(custId){ return state.messages.filter(m=>m.customerId===custId).sort((a,b)=>new Date(b.at)-new Date(a.at))[0]; }
+function prospects(){
+  return state.leads.filter(l=>!['completed','lost'].includes(l.stage)).map(l=>{
+    const c=cust(l.customerId); const q=state.quotes.filter(q=>q.customerId===l.customerId&&q.status==='sent').sort((a,b)=>new Date(b.sentAt)-new Date(a.sentAt))[0];
+    const value=q?quoteTotal(q):(TYPES[l.type||'repair'].tpl.reduce((s,i)=>s+i.qty*i.price,0)*(1+state.biz.vat));
+    const lm=lastMsg(l.customerId); const waiting=lm&&lm.dir==='in'?(now()-new Date(lm.at))/36e5:0;
+    let score=value*(STAGE_W[l.stage]||.3); const why=[money(value)+(q?' quoted':' estimated')];
+    if(l.urgent){ score*=1.5; why.push('urgent'); }
+    if(waiting>=1){ score*=1.3; why.push('waiting '+ago(lm.at)+' for a reply'); }
+    let action='Make first contact'; 
+    if(waiting>=1) action='Reply now';
+    else if(q){ const d=Math.floor((now()-new Date(q.sentAt))/864e5); if(d>=2){ action='Follow up on the quote'; why.push('quote sent '+d+' days ago'); } else action='Wait for the quote reply'; }
+    else if(l.stage==='booked') action='Confirm the appointment';
+    else if(l.stage==='contacted') action='Offer a booking or quote';
+    return {lead:l,c,value,score,why,action};
+  }).sort((a,b)=>b.score-a.score);
+}
+const STAGE_DWELL = {new:1, contacted:3, quoted:5, booked:2};
+function staleLeads(){ return state.leads.filter(l=>{ const d=STAGE_DWELL[l.stage]; if(!d) return false; const age=(now()-new Date(l.lastTouch||l.createdAt))/864e5; return age>=d; }); }
+function important(){
+  const out=[];
+  prospects().forEach(p=>{ if(p.lead.urgent&&p.lead.stage!=='booked') out.push({sev:3,title:'Urgent: '+p.c.name,detail:p.why.join(', ')+'. '+p.action+'.',tab:'messages',thread:'c:'+p.c.id,cta:'Open thread'}); });
+  overdueJobs().forEach(j=>out.push({sev:3,title:'No outcome logged: '+custName(j.customerId),detail:TYPES[j.type].label+' was due '+fmtMin(j.startMin)+' '+dayLabel(j.date)+'. Mark it completed, no-show or cancelled.',tab:'calendar',cta:'Open calendar'}));
+  overdueCommitments().forEach(e=>out.push({sev:3,title:'Broken commitment: '+custName(e.customerId),detail:'"'+e.body+'" was due '+dayLabel(dISO(new Date(e.dueAt)))+' and is still open.',tab:'pipeline',cta:'Open queue'}));
+  state.customers.forEach(c=>{ const lm=lastMsg(c.id); if(lm&&lm.dir==='in'&&(now()-new Date(lm.at))/36e5>=1 && !out.some(o=>o.thread==='c:'+c.id)) out.push({sev:2,title:c.name+' is waiting for a reply',detail:'Last message '+ago(lm.at)+' ago on '+lm.channel+'.',tab:'messages',thread:'c:'+c.id,cta:'Reply'}); });
+  state.quotes.filter(q=>q.status==='sent'&&(now()-new Date(q.sentAt))/864e5>=2).forEach(q=>out.push({sev:2,title:'Quote unanswered: '+custName(q.customerId),detail:money(quoteTotal(q))+' sent '+ago(q.sentAt)+' ago, '+q.followUps.length+' follow-ups so far.',tab:'quoting',cta:'Manage quotes'}));
+  staleLeads().forEach(l=>out.push({sev:2,title:'Stuck in '+STAGES.find(s=>s[0]===l.stage)[1]+': '+custName(l.customerId),detail:'No movement for '+Math.floor((now()-new Date(l.lastTouch||l.createdAt))/864e5)+' day(s), past the '+STAGE_DWELL[l.stage]+'-day mark for this stage.',tab:'pipeline',cta:'Open pipeline'}));
+  const blocked=state.messages.filter(m=>m.status==='blocked'&&m.dir==='out'); if(blocked.length) out.push({sev:2,title:blocked.length+' message'+(blocked.length>1?'s':'')+' blocked',detail:'Latest: '+blocked[blocked.length-1].reason,tab:'messages',cta:'Review'});
+  const pend=state.queue.filter(e=>e.status==='pending').length; if(pend) out.push({sev:1,title:pend+' automated message'+(pend>1?'s':'')+' waiting for approval',detail:'Approve them or switch on auto-approve.',tab:'pipeline',cta:'Open queue'});
+  const tomorrow=dISO(new Date(now().getTime()+864e5)); state.jobs.filter(j=>j.status==='booked'&&j.date===tomorrow).forEach(j=>out.push({sev:1,title:'Unconfirmed tomorrow: '+custName(j.customerId),detail:TYPES[j.type].label+' at '+fmtMin(j.startMin)+'. The customer has not replied YES.',tab:'calendar',cta:'View day'}));
+  dormant().forEach(d=>out.push({sev:0,title:'Overdue for service: '+d.c.name,detail:'Last job '+dayLabel(dISO(new Date(d.last.completedAt)))+'. Usually books every '+d.c.avgInterval+' days.',tab:'pipeline',cta:'See rebooking'}));
+  return out.sort((a,b)=>b.sev-a.sev);
+}
+
+/* ============ VIEW HELPERS ============ */
+let TAB='dashboard', selDay=null, weekOff=0, activeThread=null, threadTab='customer', compose={to:'',channel:'SMS',subject:'',body:''}, simReply='', resched=null, bookPrefill='', bookRes=null, qFilter='all', chat=null;
+let draft={customer:'',type:'repair',items:null,range:false,reviseOf:null,channel:''};
+function setTab(t){ TAB=t; render(); window.scrollTo(0,0); const lbl=document.getElementById('aiScreenLabel'); if(lbl) lbl.textContent = SCREEN_NAMES[TAB]||TAB; }
+function go(tab,thread){ if(thread){ activeThread=thread; threadTab=thread[0]==='u'?'staff':'customer'; compose.to=thread; } setTab(tab); }
+function advance(n,u){ const d=now(); if(u==='h') d.setHours(d.getHours()+n); else d.setDate(d.getDate()+n); state.simNow=d.toISOString(); scan(); render(); }
+function pill(s){ return '<span class="pill '+esc(s)+'">'+esc(String(s).replace('_',' '))+'</span>'; }
+function timeline(date){
+  const S=state.biz.workStart,E=state.biz.workEnd,span=E-S;
+  const hrs=[]; for(let h=S/60;h<=E/60;h++) hrs.push('<span>'+pad(h)+'</span>');
+  let h='<div class="tl-hours"><span></span><div class="scale">'+hrs.join('')+'</div></div>';
+  techs().forEach(t=>{
+    const jobs=state.jobs.filter(j=>j.techId===t.id&&j.date===date&&j.status!=='cancelled');
+    h+='<div class="tl-row"><div class="tl-name">'+esc(first(t.name))+'</div><div class="tl-track">'+jobs.map(j=>'<div class="tl-job '+j.status+' '+(j.type==='emergency'?'emergency':'')+'" style="left:'+((j.startMin-S)/span*100)+'%;width:'+(j.durMin/span*100)+'%" title="'+esc(custName(j.customerId)+', '+TYPES[j.type].label+' '+fmtMin(j.startMin)+' to '+fmtMin(j.startMin+j.durMin))+'">'+esc(custName(j.customerId))+'</div>').join('')+(date===todayISO()&&nowMin()>=S&&nowMin()<=E?'<div class="tl-now" style="left:'+((nowMin()-S)/span*100)+'%"></div>':'')+'</div></div>';
+  });
+  return h;
+}
+function dayStats(date){
+  const js=state.jobs.filter(j=>j.date===date&&j.status!=='cancelled');
+  const cap=techs().length*(state.biz.workEnd-state.biz.workStart);
+  const booked=js.reduce((s,j)=>s+j.durMin,0);
+  const rev=js.filter(j=>j.status!=='no_show').reduce((s,j)=>s+TYPES[j.type].tpl.reduce((a,i)=>a+i.qty*i.price,0)*(1+state.biz.vat),0);
+  return {jobs:js.length,hours:booked/60,util:cap?Math.round(booked/cap*100):0,rev,drive:js.reduce((s,j)=>s+(j.driveMin||0),0),noshow:js.filter(j=>j.status==='no_show').length,cancelled:state.jobs.filter(j=>j.date===date&&j.status==='cancelled').length};
+}
+
+/* ============ DASHBOARD ============ */
+function vDashboard(){
+  const today=todayISO(), ds=dayStats(today);
+  const imp=important();
+  const openL=state.leads.filter(l=>!['completed','lost'].includes(l.stage)).length;
+  const sentQ=state.quotes.filter(q=>q.status==='sent'); const qv=sentQ.reduce((s,q)=>s+quoteTotal(q),0);
+  const unread=state.messages.filter(m=>m.dir==='in'&&!m.read&&m.thread==='customer').length;
+  const nextJob=state.jobs.filter(j=>['booked','confirmed'].includes(j.status)).map(j=>({j,t:new Date(isoDate(j.date).getTime()+j.startMin*6e4)})).filter(x=>x.t>now()).sort((a,b)=>a.t-b.t)[0];
+  const stageCounts=STAGES.slice(0,4).map(([k,l])=>l+' '+state.leads.filter(x=>x.stage===k).length).join(', ');
+
+  // ---- Revenue at risk this week: fully derived, nothing here is typed in by hand ----
+  const atRiskQuotes=state.quotes.filter(q=>q.status==='sent'&&(now()-new Date(q.sentAt))/864e5>=5);
+  const riskFromQuotes=atRiskQuotes.reduce((s,q)=>s+quoteTotal(q),0);
+  const next48=new Date(now().getTime()+48*36e5);
+  const unconfirmedSoon=state.jobs.filter(j=>{ if(j.status!=='booked') return false; const t=new Date(isoDate(j.date)); t.setMinutes(j.startMin); return t>now()&&t<=next48; });
+  const riskFromJobs=unconfirmedSoon.reduce((s,j)=>s+TYPES[j.type].tpl.reduce((a,i)=>a+i.qty*i.price,0)*(1+state.biz.vat),0);
+  const revenueAtRisk=riskFromQuotes+riskFromJobs;
+
+  // ---- The four fixed zones ----
+  const needsAction=imp.filter(i=>i.sev>=2).slice(0,6);
+  const moneyRows=state.quotes.filter(q=>['sent'].includes(q.status)).sort((a,b)=>new Date(a.sentAt)-new Date(b.sentAt)).map(q=>{
+    const days=Math.floor((now()-new Date(q.sentAt))/864e5); const band=days<=2?'ok':days<=6?'warn':'urgent';
+    return `<tr><td>${esc(custName(q.customerId))}</td><td>${money(quoteTotal(q))}</td><td><span class="pill ${band}">${days}d outstanding</span></td></tr>`;
+  }).join('');
+  const overdue=overdueJobs();
+  const stale=staleLeads();
+
+  return `<h1>${esc(state.biz.name)}</h1><p class="lede">${now().toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long'})}. Everything below reads from the same customers, jobs and messages, so a booking made anywhere shows up everywhere.</p>
+  <div class="panel" style="text-align:center;padding:20px"><div class="muted small">REVENUE AT RISK THIS WEEK</div><div style="font-size:38px;font-weight:700;margin:4px 0">${money(revenueAtRisk)}</div><div class="muted small">${atRiskQuotes.length} quote${atRiskQuotes.length===1?'':'s'} sitting 5+ days, ${unconfirmedSoon.length} booking${unconfirmedSoon.length===1?'':'s'} in the next 48h still unconfirmed. Nothing here is typed in — it's all computed from quotes and jobs.</div></div>
+  <div class="panel today"><div class="today-top"><h2>Today on the road</h2><span class="muted small">${ds.jobs} job${ds.jobs===1?'':'s'}, ${ds.util}% of technician time booked. The brass line is now.</span></div>${timeline(today)}</div>
+  <div class="kpis">
+    <div class="kpi"><div class="num">${ds.jobs}</div><div class="l">Jobs today</div></div>
+    <div class="kpi"><div class="num">${openL}</div><div class="l">Open leads</div></div>
+    <div class="kpi"><div class="num">${money(qv)}</div><div class="l">${sentQ.length} quote${sentQ.length===1?'':'s'} awaiting an answer</div></div>
+    <div class="kpi"><div class="num">${unread}</div><div class="l">Unread customer messages</div></div>
+  </div>
+  <div class="mods">
+    <button class="mod" onclick="setTab('quoting')"><b>Quoting</b><span>${sentQ.length} sent, ${state.quotes.filter(q=>q.status==='draft').length} draft.</span></button>
+    <button class="mod" onclick="setTab('messages')"><b>Messages</b><span>${unread} unread.</span></button>
+    <button class="mod" onclick="setTab('calendar')"><b>Calendar</b><span>${nextJob?'Next: '+esc(custName(nextJob.j.customerId))+', '+dayLabel(nextJob.j.date)+' '+fmtMin(nextJob.j.startMin):'Nothing booked.'}</span></button>
+    <button class="mod" onclick="setTab('pipeline')"><b>Pipeline</b><span>${stageCounts}.</span></button>
+  </div>
+  <div class="cols">
+    <div class="panel"><div class="ph"><h2>Needs action now</h2></div><div class="pb">${needsAction.length?needsAction.map(attRow).join(''):'<div class="empty">Nothing urgent right now.</div>'}</div></div>
+    <div class="panel"><div class="ph"><h2>Money in motion</h2><p>Quotes outstanding, color-coded by age.</p></div><div class="pb tblwrap">${moneyRows?`<table><tr><th>Customer</th><th>Value</th><th>Age</th></tr>${moneyRows}</table>`:'<div class="empty">No quotes currently out.</div>'}</div></div>
+  </div>
+  <div class="cols">
+    <div class="panel"><div class="ph"><h2>Delivery health</h2></div><div class="pb">${overdue.length?overdue.slice(0,5).map(j=>`<div class="att"><div><div class="t">${esc(custName(j.customerId))} — ${TYPES[j.type].label}</div><div class="muted small">Was due ${fmtMin(j.startMin)} ${dayLabel(j.date)}, still shows as ${j.status}.</div></div><button class="btn ghost sm" onclick="go('calendar')">Log outcome</button></div>`).join(''):'<div class="empty">Every past appointment has an outcome logged.</div>'}</div></div>
+    <div class="panel"><div class="ph"><h2>Pipeline pulse</h2></div><div class="pb">
+      <div class="tblwrap"><table><tr>${STAGES.map(([k,l])=>`<th>${l}</th>`).join('')}</tr><tr>${STAGES.map(([k])=>`<td>${state.leads.filter(x=>x.stage===k).length}</td>`).join('')}</tr></table></div>
+      ${stale.length?`<p class="muted small" style="margin-top:10px">${stale.length} lead${stale.length===1?'':'s'} stuck past their stage's usual time — see the Pipeline board.</p>`:'<p class="muted small" style="margin-top:10px">No leads are stuck past their stage\'s usual time.</p>'}
+    </div></div>
+  </div>`;
+}
+function attRow(i){ return `<div class="att"><div style="display:flex;align-items:flex-start"><span class="dot ${i.sev>=3?'hi':i.sev===2?'mid':''}" style="margin-top:6px"></span><div><div class="t">${esc(i.title)}</div><div class="muted small">${esc(i.detail)}</div></div></div><button class="btn ghost sm" onclick="go('${i.tab}',${i.thread?"'"+i.thread+"'":'null'})">${esc(i.cta)}</button></div>`; }
+
+function setSetting(k,v){ state.settings[k]=v; save(); syncOrgSettings(); render(); }
+function hasFeature(k){ return !!(state.settings.features && state.settings.features[k]); }
+
+/* ============ GMAIL (per-org OAuth via Netlify Functions) ============ */
+let gmailConn = {connected:false, email:null};
+async function refreshGmailStatus(){
+  try{
+    const resp = await fetch('/.netlify/functions/gmail-status', {headers:{Authorization:'Bearer '+session.access_token}});
+    gmailConn = await resp.json();
+  }catch(e){ gmailConn = {connected:false, email:null}; }
+  render();
+}
+async function connectGmail(){
+  try{
+    const resp = await fetch('/.netlify/functions/gmail-oauth-init', {method:'POST', headers:{Authorization:'Bearer '+session.access_token}});
+    const data = await resp.json();
+    if(data.url) window.location.href = data.url;
+    else toast('Could not start Gmail connection: '+(data.error||'unknown error'));
+  }catch(e){ toast('Could not reach the Gmail connector. Is it deployed yet?'); }
+}
+async function disconnectGmail(){
+  try{
+    await fetch('/.netlify/functions/gmail-disconnect', {method:'POST', headers:{Authorization:'Bearer '+session.access_token}});
+    toast('Gmail disconnected.');
+    await refreshGmailStatus();
+  }catch(e){ toast('Could not disconnect right now.'); }
+}
+async function syncGmail(){
+  toast('Checking Gmail for new messages…');
+  try{
+    const resp = await fetch('/.netlify/functions/gmail-sync', {method:'POST', headers:{Authorization:'Bearer '+session.access_token}});
+    const data = await resp.json();
+    if(data.error){ toast('Gmail sync failed: '+data.error); return; }
+    toast(data.imported+' new email'+(data.imported===1?'':'s')+' imported'+(data.skipped?', '+data.skipped+' from unknown senders skipped':'')+'.');
+    await loadLiveData(); render();
+  }catch(e){ toast('Could not reach the Gmail sync function.'); }
+}
+function openGmailPopup(){
+  const [ck,cid]=(compose.to||'').split(':');
+  if(ck!=='c'||!cid){ toast('Choose a customer first.'); return; }
+  const c=cust(cid);
+  if(!c.email){ toast('This customer has no email address on file.'); return; }
+  const url='https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(c.email)+'&su='+encodeURIComponent(compose.subject||'')+'&body='+encodeURIComponent(compose.body||'');
+  window.open(url,'popup','width=600,height=500');
+}
+function setFeature(k,v){ state.settings.features=state.settings.features||{}; state.settings.features[k]=v; save(); syncOrgSettings(); render(); }
+
+/* ============ AI INSIGHTS WIDGET (Gemini, via Netlify Function) ============ */
+let aiChat = [];
+let aiOpen = false;
+const SCREEN_NAMES = {dashboard:'Dashboard', calendar:'Calendar', quoting:'Quoting', pipeline:'Pipeline', messages:'Messages', system:'System'};
+
+function countBy(arr, key){ const o={}; (arr||[]).forEach(x=>{ const k=x[key]; o[k]=(o[k]||0)+1; }); return o; }
+
+function buildScreenContext(tab){
+  try{
+    switch(tab){
+      case 'dashboard': {
+        const t=todayISO();
+        return {
+          jobsToday: state.jobs.filter(j=>j.date===t).length,
+          jobsUpcoming: state.jobs.filter(j=>j.date>=t && ['booked','confirmed'].includes(j.status)).length,
+          leadsByStage: countBy(state.leads,'stage'),
+          quotesByStatus: countBy(state.quotes,'status'),
+          blockedMessages: state.messages.filter(m=>m.status==='blocked').length,
+          pendingAutomationQueue: state.queue.filter(e=>e.status==='pending').length
+        };
+      }
+      case 'calendar':
+        return { totalJobs: state.jobs.length, byStatus: countBy(state.jobs,'status'),
+          technicians: state.users.filter(u=>u.role==='technician').map(u=>u.name),
+          selectedDay: selDay };
+      case 'quoting':
+        return { byStatus: countBy(state.quotes,'status'),
+          totalOpenValue: state.quotes.filter(q=>q.status==='sent').reduce((s,q)=>s+(q.items||[]).reduce((a,i)=>a+(i.qty*i.price||0),0),0) };
+      case 'pipeline':
+        return { byStage: countBy(state.leads,'stage'), urgentLeads: state.leads.filter(l=>l.urgent).length };
+      case 'messages':
+        return { byStatus: countBy(state.messages,'status'), unread: state.messages.filter(m=>!m.read).length };
+      case 'system':
+        return { teamSize: state.users.length, businessHours: state.biz.workStart+'–'+state.biz.workEnd,
+          quietHours: state.biz.quietStart+'–'+state.biz.quietEnd, autoApprove: !!state.settings.autoApprove,
+          pendingInvites: pendingInvites.length };
+      default:
+        return {};
+    }
+  }catch(e){ return { note: 'Could not gather context for this screen.' }; }
+}
+
+function toggleAI(){
+  aiOpen = !aiOpen;
+  document.getElementById('aiPanel').style.display = aiOpen ? 'flex' : 'none';
+  document.getElementById('aiScreenLabel').textContent = SCREEN_NAMES[TAB] || TAB;
+  if(aiOpen && !aiChat.length){
+    askAI('Give me insights on what you see on this screen.');
+  }
+}
+
+function renderAiLog(){
+  const el = document.getElementById('aiLog'); if(!el) return;
+  el.innerHTML = aiChat.map(m=>`<div style="align-self:${m.from==='you'?'flex-end':'flex-start'};max-width:85%;padding:7px 10px;border-radius:8px;background:${m.from==='you'?'var(--brand)':'var(--sunk)'};color:${m.from==='you'?'var(--brand-ink)':'var(--ink)'}">${esc(m.text)}</div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+async function askAI(question){
+  question = (question||'').trim();
+  if(!question) return;
+  if(!aiOpen){ aiOpen=true; document.getElementById('aiPanel').style.display='flex'; }
+  document.getElementById('aiScreenLabel').textContent = SCREEN_NAMES[TAB] || TAB;
+  aiChat.push({from:'you', text:question});
+  aiChat.push({from:'bot', text:'Thinking…'});
+  renderAiLog();
+  try{
+    const resp = await fetch('/.netlify/functions/ai-insights', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ message:question, screen: SCREEN_NAMES[TAB]||TAB, context: buildScreenContext(TAB) })
+    });
+    const data = await resp.json();
+    aiChat.pop();
+    aiChat.push({from:'bot', text: data.text || ('Error: '+(data.error||'no response'))});
+  }catch(err){
+    aiChat.pop();
+    aiChat.push({from:'bot', text:'Could not reach the AI assistant. Is it deployed yet?'});
+  }
+  renderAiLog();
+}
+
+/* ============ QUOTING ============ */
+function ensureDraft(){ if(!draft.items) draft.items=TYPES[draft.type].tpl.map(x=>({...x})); }
+function switchType(t){ draft.type=t; draft.items=TYPES[t].tpl.map(x=>({...x})); render(); }
+function startFromLead(id){ const l=state.leads.find(l=>l.id===id); if(!l) return; draft={customer:custName(l.customerId),type:l.type||'repair',items:TYPES[l.type||'repair'].tpl.map(x=>({...x})),range:false,reviseOf:null,channel:''}; render(); window.scrollTo(0,0); }
+function reviseQuote(id){ const q=state.quotes.find(q=>q.id===id); if(!q) return; draft={customer:custName(q.customerId),type:q.type,items:q.items.map(x=>({...x})),range:q.isRange,reviseOf:q.id,channel:''}; render(); window.scrollTo(0,0); }
+function saveQuote(send){
+  ensureDraft(); const name=(draft.customer||'').trim(); if(!name){ toast('Enter a customer name first.'); return; }
+  const c=findOrCreate(name); const channel=draft.channel||c.pref;
+  const prev=draft.reviseOf?state.quotes.find(q=>q.id===draft.reviseOf):null;
+  const q={id:uid('q'),customerId:c.id,type:draft.type,items:draft.items.map(x=>({...x})),version:prev?prev.version+1:1,status:'draft',createdAt:state.simNow,sentAt:null,followUps:[],isRange:draft.range,leadId:openLead(c.id)?.id||null};
+  if(send){
+    const r=deliverQuote(q,channel);
+    if(r.action==='block'){ toast('Not sent: '+r.reason); q.status='draft'; }
+    else { q.status='sent'; q.sentAt=state.simNow; if(prev){ prev.status='superseded'; emit('QuoteRevised',c.name+' quote is now v'+q.version,q.id); } emit('QuoteSent',c.name+', '+quoteText(q),q.id); const l=openLead(c.id); if(l&&['new','contacted'].includes(l.stage)) l.stage='quoted'; toast(r.action==='hold'?'Quote held until '+fmtMin(state.biz.quietEnd)+'.':'Quote sent.'); }
+  } else toast('Draft saved.');
+  state.quotes.push(q); draft={customer:'',type:'repair',items:null,range:false,reviseOf:null,channel:''}; save(); render();
+}
+function sendDraftQuote(id){ const q=state.quotes.find(q=>q.id===id); const c=cust(q.customerId); const r=deliverQuote(q,c.pref); if(r.action==='block'){ toast('Not sent: '+r.reason); render(); return; } q.status='sent'; q.sentAt=state.simNow; const l=openLead(c.id); if(l&&['new','contacted'].includes(l.stage)) l.stage='quoted'; emit('QuoteSent',c.name+', '+quoteText(q),q.id); save(); render(); toast('Quote sent.'); }
+function setQuote(id,status){ const q=state.quotes.find(q=>q.id===id); if(!q) return; q.status=status; if(status==='accepted') emit('QuoteAccepted',custName(q.customerId)+' accepted '+quoteText(q),q.id); if(status==='declined'){ const l=openLead(q.customerId); if(l){ l.stage='lost'; l.lossReason='Declined quote'; l.lastTouch=state.simNow; } } save(); render(); }
+function bookFromQuote(id){ const q=state.quotes.find(q=>q.id===id); bookPrefill=custName(q.customerId); bookRes={type:q.type,quoteId:q.id}; setTab('calendar'); }
+function vQuoting(){
+  ensureDraft();
+  const sub=draft.items.reduce((s,i)=>s+i.qty*i.price,0), tot=sub*(1+state.biz.vat);
+  const intake=state.leads.filter(l=>l.quoteRequested&&!['completed','lost'].includes(l.stage)&&!state.quotes.some(q=>q.customerId===l.customerId&&['sent','accepted','draft'].includes(q.status)));
+  const list=state.quotes.filter(q=>qFilter==='all'||q.status===qFilter).slice().reverse();
+  const cname=(draft.customer||'').trim().toLowerCase(); const dc=state.customers.find(c=>c.name.toLowerCase()===cname);
+  const ch=draft.channel||dc?.pref||'Email'; const g=dc?gate(dc.id,ch,'transactional'):null;
+  return `<h1>Quoting</h1><p class="lede">Create a quote from a template, send it on the customer's channel, then track it until it is accepted, declined or replaced by a revision. Prices are stored on each quote, so changing a template never rewrites an old quote.</p>
+  ${intake.length?`<div class="panel"><div class="ph"><div><h2>Asked for a quote</h2><p>Customers who requested a quote and have not received one.</p></div></div><div class="pb">${intake.map(l=>`<div class="att"><div><div class="t">${esc(custName(l.customerId))} ${l.urgent?'<span class="pill urgent">urgent</span>':''}</div><div class="muted small">${esc(l.note)} Waiting ${ago(l.createdAt)}.</div></div><button class="btn sm" onclick="startFromLead('${l.id}')">Start quote</button></div>`).join('')}</div></div>`:''}
+  <div class="panel"><div class="ph"><div><h2>${draft.reviseOf?'Revise quote (new version)':'Create a quote'}</h2><p>${draft.reviseOf?'Sending replaces the earlier version, which is kept as superseded.':'Pick a template, adjust the lines, then send.'}</p></div></div><div class="pb">
+    <div class="row"><div class="field"><label for="qc">Customer</label><input id="qc" list="custList" value="${esc(draft.customer)}" oninput="draft.customer=this.value" onchange="render()" placeholder="Start typing a name"></div>
+    <div class="field"><label for="qt">Template</label><select id="qt" onchange="switchType(this.value)">${Object.entries(TYPES).map(([k,v])=>`<option value="${k}" ${draft.type===k?'selected':''}>${v.label}</option>`).join('')}</select></div>
+    <div class="field"><label for="qch">Send by</label><select id="qch" onchange="draft.channel=this.value;render()">${['Email','SMS','WhatsApp'].map(c=>`<option ${ch===c?'selected':''}>${c}</option>`).join('')}</select></div></div>
+    <div style="margin-top:14px">${draft.items.map((li,i)=>`<div class="li"><input aria-label="Description" value="${esc(li.desc)}" onchange="draft.items[${i}].desc=this.value"><input aria-label="Quantity" type="number" min="0" value="${li.qty}" onchange="draft.items[${i}].qty=parseFloat(this.value)||0;render()"><input aria-label="Price" type="number" min="0" value="${li.price}" onchange="draft.items[${i}].price=parseFloat(this.value)||0;render()"><input aria-label="Line total" value="${money(li.qty*li.price)}" disabled><button class="xbtn" aria-label="Remove line" onclick="draft.items.splice(${i},1);render()">×</button></div>`).join('')}
+    <button class="btn ghost sm" onclick="draft.items.push({desc:'New line',qty:1,price:0});render()">Add a line</button></div>
+    <div class="totals muted small">Subtotal ${money(sub)}, VAT ${Math.round(state.biz.vat*100)}% ${money(sub*state.biz.vat)}<div class="g" style="color:var(--ink)">${draft.range?money(tot*.85)+' to '+money(tot*1.15):money(tot)}</div><div>Deposit ${money(tot*state.biz.depositRate)}</div></div>
+    <label class="toggle" style="margin-top:8px"><input type="checkbox" ${draft.range?'checked':''} onchange="draft.range=this.checked;render()"> Show a price range because the scope is uncertain</label>
+    ${g?`<div class="gate ${g.action==='send'?'':g.action}">${g.action==='send'?'Will send by '+ch+'.'+(g.reason?' '+esc(g.reason):''):esc(g.reason)}</div>`:''}
+    <div style="margin-top:10px;display:flex;gap:8px"><button class="btn" onclick="saveQuote(true)">Send quote</button><button class="btn ghost" onclick="saveQuote(false)">Save as draft</button>${draft.reviseOf?'<button class="btn ghost" onclick="draft={customer:\'\',type:\'repair\',items:null,range:false,reviseOf:null,channel:\'\'};render()">Cancel revision</button>':''}</div>
+  </div></div>
+  <div class="panel"><div class="ph"><div><h2>Manage quotes</h2></div><div style="display:flex;gap:6px;flex-wrap:wrap">${['all','draft','sent','accepted','declined','expired','superseded'].map(f=>`<button class="chip ${qFilter===f?'on':''}" onclick="qFilter='${f}';render()">${f}</button>`).join('')}</div></div><div class="pb tblwrap">
+    ${list.length?`<table><tr><th>Customer</th><th>Template</th><th>Total</th><th>Status</th><th>Follow-ups</th><th></th></tr>${list.map(q=>`<tr><td>${esc(custName(q.customerId))}<div class="muted small">v${q.version}, ${fmtDT(q.createdAt)}</div></td><td>${TYPES[q.type].label}</td><td>${quoteText(q)}</td><td>${pill(q.status)}</td><td>${q.followUps.length}/${FOLLOWUPS.length}</td><td><div class="acts">
+      ${q.status==='draft'?`<button class="btn sm" onclick="sendDraftQuote('${q.id}')">Send</button>`:''}
+      ${q.status==='sent'?`<button class="btn sm" onclick="setQuote('${q.id}','accepted')">Mark accepted</button><button class="btn ghost sm" onclick="arm('dq${q.id}',()=>setQuote('${q.id}','declined'))">${armLabel('dq'+q.id,'Decline','Sure?')}</button>`:''}
+      ${['draft','sent','declined','expired'].includes(q.status)?`<button class="btn ghost sm" onclick="reviseQuote('${q.id}')">Revise</button>`:''}
+      ${q.status==='accepted'?`<button class="btn sm" onclick="bookFromQuote('${q.id}')">Book the job</button>`:''}
+    </div></td></tr>`).join('')}</table>`:'<div class="empty">No quotes here yet.</div>'}
+  </div></div>`;
+}
+
+/* ============ MESSAGES ============ */
+function threadList(){
+  if(threadTab==='staff') return state.users.map(u=>{ const ms=state.messages.filter(m=>m.thread==='staff'&&m.userId===u.id); const l=ms[ms.length-1]; return {key:'u:'+u.id,name:u.name,sub:u.role,preview:l?l.body:'No messages yet',unread:0,at:l?l.at:''}; });
+  const ids=[...new Set(state.messages.filter(m=>m.thread==='customer').map(m=>m.customerId))];
+  return ids.map(id=>{ const ms=state.messages.filter(m=>m.customerId===id&&m.thread==='customer'); const l=ms.sort((a,b)=>new Date(a.at)-new Date(b.at))[ms.length-1]; return {key:'c:'+id,name:custName(id),preview:l.body,unread:ms.filter(m=>m.dir==='in'&&!m.read).length,at:l.at}; }).sort((a,b)=>new Date(b.at)-new Date(a.at));
+}
+function openThread(key){ activeThread=key; compose.to=key; const [k,id]=key.split(':'); if(k==='c'){ state.messages.filter(m=>m.customerId===id&&m.dir==='in').forEach(m=>m.read=true); const c=cust(id); if(c) compose.channel=c.pref; } else compose.channel='Internal'; save(); render(); }
+const MSG_TAGS=['Needs Reply','Waiting on Client','Commitment Made','FYI'];
+function tagMessage(id,tag){
+  const m=state.messages.find(m=>m.id===id); if(!m) return;
+  if(tag==='Commitment Made'){
+    const desc=prompt('What was promised?'); if(!desc||!desc.trim()){ return; }
+    const due=prompt('Due date (YYYY-MM-DD)?', dISO(new Date(now().getTime()+3*864e5)));
+    if(!due){ return; }
+    m.tag=tag;
+    const key='commit:'+m.id;
+    if(!state.queue.some(e=>e.key===key)){
+      state.queue.push({id:uid('sq'),key,seq:'commitment',customerId:m.customerId,relatedId:m.id,
+        body:desc.trim(),subject:'Commitment',kind:'commitment',status:'pending',createdAt:state.simNow,
+        outcome:null,reason:'',dueAt:new Date(due+'T17:00:00').toISOString()});
+    }
+    emit('CommitmentMade',desc.trim()+' — due '+dayLabel(due),m.id);
+  } else { m.tag=tag; }
+  save(); render();
+}
+function completeCommitment(id){ const e=state.queue.find(e=>e.id===id); if(!e) return; e.status='done'; e.outcome='completed'; save(); render(); }
+function overdueCommitments(){ return state.queue.filter(e=>e.seq==='commitment'&&e.status==='pending'&&e.dueAt&&new Date(e.dueAt)<now()); }
+let needsReplyOnly=true;
+function setTo(v){ compose.to=v; activeThread=v||activeThread; const [k,id]=v.split(':'); compose.channel=k==='c'?(cust(id)?.pref||'SMS'):'Internal'; if(k==='c') threadTab='customer'; else threadTab='staff'; render(); }
+function draftFor(custId,text){ activeThread='c:'+custId; threadTab='customer'; compose.to='c:'+custId; compose.channel=cust(custId).pref; compose.body=text; compose.subject=cust(custId).pref==='Email'?'Following up':''; render(); document.getElementById('composer')?.scrollIntoView({behavior:'smooth'}); }
+function sendCompose(){
+  const [k,id]=(compose.to||'').split(':'); if(!id){ toast('Choose who to message.'); return; } if(!compose.body.trim()){ toast('Write a message first.'); return; }
+  if(k==='u'){ state.messages.push({id:uid('m'),thread:'staff',userId:id,dir:'out',channel:'Internal',subject:'',body:compose.body,at:state.simNow,status:'sent',read:true}); emit('StaffMessage','Message to '+user(id).name); compose.body=''; }
+  else { const r=sendOut({custId:id,channel:compose.channel,kind:'transactional',body:compose.body,subject:compose.subject,tag:'manual'}); if(r.action==='block') toast('Blocked: '+r.reason); else { toast(r.action==='hold'?'Held: '+r.reason:'Sent.'); compose.body=''; compose.subject=''; } }
+  save(); render();
+}
+function simInbound(){ const [k,id]=(activeThread||'').split(':'); if(k!=='c'||!simReply.trim()) return; const c=cust(id); const ch=Object.keys(c.lastInbound||{}).sort((a,b)=>new Date(c.lastInbound[b])-new Date(c.lastInbound[a]))[0]||c.pref; receive(id,ch,simReply); simReply=''; state.messages.filter(m=>m.customerId===id&&m.dir==='in').forEach(m=>m.read=true); save(); render(); }
+function vMessages(){
+  const tl=threadList(); if(!activeThread&&tl[0]) activeThread=tl[0].key;
+  const [ak,aid]=(activeThread||'').split(':');
+  const msgs=ak==='c'?state.messages.filter(m=>m.thread==='customer'&&m.customerId===aid):ak==='u'?state.messages.filter(m=>m.thread==='staff'&&m.userId===aid):[];
+  msgs.sort((a,b)=>new Date(a.at)-new Date(b.at));
+  const top=prospects().slice(0,3);
+  const [ck,cid]=(compose.to||'').split(':'); const g=ck==='c'&&cid?gate(cid,compose.channel,'transactional'):null;
+  const sug={ 'Reply now':c=>'Hi '+first(c.name)+', thanks for your message. We can get someone to you. What time suits you best?','Follow up on the quote':c=>'Hi '+first(c.name)+', just checking whether you had any questions about your quote.','Make first contact':c=>'Hi '+first(c.name)+', thanks for getting in touch with '+state.biz.name+'. How can we help?','Offer a booking or quote':c=>'Hi '+first(c.name)+', shall we book a visit or would you like a quote first?','Confirm the appointment':c=>'Hi '+first(c.name)+', please reply YES to confirm your appointment.'};
+  return `<h1>Messages</h1><p class="lede">Email, SMS and WhatsApp with customers, and internal messages to staff. Customer messages are checked for opt-out, quiet hours and the WhatsApp 24-hour rule before they leave.</p>
+  <div class="panel"><div class="ph"><div><h2>Who to focus on</h2><p>The AI rep ranks open prospects by likely value and how close they are to booking.</p></div></div><div class="pb">
+    ${top.length?`<div class="focus">${top.map((p,i)=>`<div class="fc"><div class="muted small">${i===0?'Best next call':'Next'}</div><div class="num">${esc(p.c.name)}</div><div class="small">${esc(p.why.join(', '))}</div><div style="margin:8px 0"><button class="btn sm" onclick="draftFor('${p.c.id}',${esc(JSON.stringify((sug[p.action]||sug['Make first contact'])(p.c))).replace(/&quot;/g,'&quot;')})">${esc(p.action)}</button></div></div>`).join('')}</div>`:'<div class="empty">No open prospects.</div>'}
+  </div></div>
+  <div class="panel"><div class="msgwrap"><div class="threads"><div class="tabs"><button class="tab ${threadTab==='customer'?'on':''}" onclick="threadTab='customer';activeThread=null;render()">Customers</button><button class="tab ${threadTab==='staff'?'on':''}" onclick="threadTab='staff';activeThread=null;render()">Staff</button></div>
+    ${threadTab==='customer'?`<label class="toggle" style="padding:6px 12px;display:block"><input type="checkbox" ${needsReplyOnly?'checked':''} onchange="needsReplyOnly=this.checked;render()"> Needs reply only</label>`:''}
+    ${(threadTab==='staff'?tl:tl.filter(t=>{ if(!needsReplyOnly) return true; const lastIn=state.messages.filter(m=>m.thread==='customer'&&m.customerId===t.key.split(':')[1]&&m.dir==='in').sort((a,b)=>new Date(b.at)-new Date(a.at))[0]; return !lastIn || !lastIn.tag || lastIn.tag==='Needs Reply'; })).map(t=>`<div class="th ${t.key===activeThread?'on':''}" onclick="openThread('${t.key}')"><div class="n"><span>${esc(t.name)}</span>${t.unread?`<span class="badge">${t.unread}</span>`:''}</div><div class="p">${esc(t.sub?t.sub+': ':'')}${esc(t.preview)}</div></div>`).join('')||'<div class="empty">No conversations.</div>'}</div>
+    <div class="convo"><div class="bubbles">${msgs.length?msgs.map(m=>`<div class="b ${m.dir==='out'?'out':''} ${m.status==='held'||m.status==='blocked'?m.status:''}">${m.subject?'<b>'+esc(m.subject)+'</b><br>':''}${esc(m.body)}<div class="meta">${esc(m.channel)}, ${fmtDT(m.at)}${m.template?', template':''}</div>${m.status==='held'||m.status==='blocked'?`<div class="why">${m.status==='held'?'Held':'Not sent'}: ${esc(m.reason)}</div>`:''}${m.dir==='in'&&ak==='c'?`<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">${MSG_TAGS.map(tg=>`<button class="chip ${m.tag===tg?'on':''}" onclick="tagMessage('${m.id}','${tg}')">${tg}</button>`).join('')}</div>`:''}</div>`).join(''):'<div class="empty">Pick a conversation or write a new message below.</div>'}</div>
+    ${ak==='c'&&aid?`<div style="padding:8px 16px;border-top:1px dashed var(--line)"><div class="row"><div class="field"><label for="sr">Simulate ${esc(first(custName(aid)))} replying (try YES or STOP)</label><input id="sr" value="${esc(simReply)}" oninput="simReply=this.value" onkeydown="if(event.key==='Enter')simInbound()"></div><button class="btn ghost sm" onclick="simInbound()">Deliver reply</button></div></div>`:''}
+    <div class="composer" id="composer"><div class="row"><div class="field"><label for="to">To</label><select id="to" onchange="setTo(this.value)"><option value="">Choose a recipient</option><optgroup label="Customers">${state.customers.map(c=>`<option value="c:${c.id}" ${compose.to==='c:'+c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</optgroup><optgroup label="Staff">${state.users.map(u=>`<option value="u:${u.id}" ${compose.to==='u:'+u.id?'selected':''}>${esc(u.name)}</option>`).join('')}</optgroup></select></div>
+      ${ck==='c'?`<div class="field"><label for="chs">Channel</label><select id="chs" onchange="compose.channel=this.value;render()">${['SMS','WhatsApp','Email'].map(c=>`<option ${compose.channel===c?'selected':''}>${c}</option>`).join('')}</select></div>`:''}</div>
+      ${ck==='c'&&compose.channel==='Email'?`<div class="field" style="margin-top:8px"><label for="sj">Subject</label><input id="sj" value="${esc(compose.subject)}" oninput="compose.subject=this.value"></div>`:''}
+      <div class="field" style="margin-top:8px"><label for="bd">Message</label><textarea id="bd" oninput="compose.body=this.value">${esc(compose.body)}</textarea></div>
+      ${g?`<div class="gate ${g.action==='send'?'':g.action}">${g.action==='send'?'This will send now.'+(g.reason?' '+esc(g.reason):''):esc(g.reason)}</div>`:''}
+      <div style="display:flex;gap:8px;align-items:center"><button class="btn" onclick="sendCompose()">Send</button><button class="btn ghost" onclick="compose.channel='Email';if(ck_()) render()">Write as email</button>${ck_()&&compose.channel==='Email'?`<button class="btn ghost" onclick="openGmailPopup()">Open in Gmail →</button>`:''}</div></div></div></div></div>`;
+}
+function ck_(){ return (compose.to||'').startsWith('c:'); }
+
+/* ============ CALENDAR ============ */
+function vCalendar(){
+  if(!selDay) selDay=todayISO();
+  const base=new Date(now()); base.setHours(0,0,0,0); base.setDate(base.getDate()-((base.getDay()+6)%7)+weekOff*7);
+  const days=[...Array(7)].map((_,i)=>{ const d=new Date(base); d.setDate(d.getDate()+i); return dISO(d); });
+  const ds=dayStats(selDay); const js=state.jobs.filter(j=>j.date===selDay).sort((a,b)=>a.startMin-b.startMin);
+  return `<h1>Calendar</h1><p class="lede">Every booked appointment with its time, plus the numbers for each day. Jobs move through booked, confirmed, then completed, no-show or cancelled. Nothing skips a step.</p>
+  <div class="panel"><div class="ph"><h2>${isoDate(days[0]).toLocaleDateString('en-ZA',{day:'numeric',month:'long'})} to ${isoDate(days[6]).toLocaleDateString('en-ZA',{day:'numeric',month:'long'})}</h2><div style="display:flex;gap:6px"><button class="chip" onclick="weekOff--;render()">Previous week</button><button class="chip" onclick="weekOff=0;selDay=todayISO();render()">This week</button><button class="chip" onclick="weekOff++;render()">Next week</button></div></div><div class="pb"><div class="week">
+    ${days.map(d=>{const s=dayStats(d),cl=state.biz.closedDays.includes(isoDate(d).getDay());return `<button class="day ${d===selDay?'on':''} ${d===todayISO()?'today':''} ${cl?'closed':''}" onclick="selDay='${d}';resched=null;render()"><b>${isoDate(d).toLocaleDateString('en-ZA',{weekday:'short',day:'numeric'})}</b>${cl?'<div class="muted small">Closed</div>':`<div class="n">${s.jobs}</div><div class="muted small">${s.util}% booked</div><div class="bar"><i style="width:${s.util}%"></i></div>`}</button>`;}).join('')}
+  </div></div></div>
+  <div class="panel"><div class="ph"><div><h2>${dayLabel(selDay)} in numbers</h2></div></div><div class="pb"><div class="stats">
+    <div class="kpi"><div class="num">${ds.jobs}</div><div class="l">Jobs</div></div><div class="kpi"><div class="num">${ds.hours.toFixed(1)}h</div><div class="l">Booked time</div></div><div class="kpi"><div class="num">${ds.util}%</div><div class="l">Of technician time</div></div><div class="kpi"><div class="num">${money(ds.rev)}</div><div class="l">Expected value incl. VAT</div></div><div class="kpi"><div class="num">${ds.drive}m</div><div class="l">Driving. ${ds.noshow} no-show, ${ds.cancelled} cancelled.</div></div>
+  </div><div style="margin-top:16px">${timeline(selDay)}</div></div></div>
+  <div class="panel"><div class="ph"><h2>Appointments</h2></div><div class="pb">${js.length?js.map(apptRow).join(''):'<div class="empty">Nothing booked for this day.</div>'}</div></div>
+  ${bookPanel()}`;
+}
+function apptRow(j){
+  const c=cust(j.customerId), open=TRANSITIONS[j.status].length>0;
+  const start=new Date(isoDate(j.date)); start.setMinutes(j.startMin); const started=start<=now();
+  const overdue=['booked','confirmed'].includes(j.status) && new Date(start.getTime()+j.durMin*6e4)<now();
+  return `<div class="appt${overdue?' urgent':''}"><div class="tm">${fmtMin(j.startMin)} to ${fmtMin(j.startMin+j.durMin)}</div><div><b>${esc(c.name)}</b> ${pill(j.status)}${overdue?' <span class="pill urgent">no outcome logged</span>':''}<div class="muted small">${TYPES[j.type].label} with ${esc(user(j.techId).name)}. ${j.driveMin} min drive, ${state.biz.buffer} min buffer.</div>
+    ${resched===j.id?`<div class="row" style="margin-top:8px"><div class="field"><label for="rd">New date</label><input type="date" id="rd" value="${j.date}"></div><button class="btn sm" onclick="findResched('${j.id}')">Find slots</button></div><div class="slots" id="rs"></div>`:''}</div>
+    <div class="acts">${open?`${j.status==='booked'?`<button class="btn ghost sm" onclick="transition('${j.id}','confirmed')">Confirm</button>`:''}<button class="btn ghost sm" onclick="resched=resched==='${j.id}'?null:'${j.id}';render()">Reschedule</button><button class="btn sm" ${started?'':'disabled title="Not started yet"'} onclick="transition('${j.id}','completed')">Complete</button><button class="btn ghost sm" ${started?'':'disabled title="Not started yet"'} onclick="transition('${j.id}','no_show')">No-show</button><button class="btn ghost sm" onclick="arm('cx${j.id}',()=>transition('${j.id}','cancelled'))">${armLabel('cx'+j.id,'Cancel','Sure?')}</button>`:''}</div></div>`;
+}
+function overdueJobs(){ return state.jobs.filter(j=>{ const s=new Date(isoDate(j.date)); s.setMinutes(j.startMin); return ['booked','confirmed'].includes(j.status) && new Date(s.getTime()+j.durMin*6e4)<now(); }); }
+function findResched(id){ const j=state.jobs.find(j=>j.id===id); const d=document.getElementById('rd').value; const s=slotsFor(j.techId,d,j.type,j.dist,j.id).slice(0,10); document.getElementById('rs').innerHTML=s.length?s.map(m=>`<button class="chip" onclick="rescheduleJob('${id}','${d}',${m})">${fmtMin(m)}</button>`).join(''):'<span class="muted small">No free slots that day for this technician.</span>'; }
+function bookPanel(){
+  const type=bookRes?.type||'repair';
+  return `<div class="panel"><div class="ph"><div><h2>Book a job</h2><p>Slots account for drive time and the buffer between jobs.</p></div></div><div class="pb">
+    <div class="row"><div class="field"><label for="bc">Customer</label><input id="bc" list="custList" value="${esc(bookPrefill)}" placeholder="Start typing a name"></div>
+    <div class="field"><label for="bt">Job type</label><select id="bt">${Object.entries(TYPES).map(([k,v])=>`<option value="${k}" ${type===k?'selected':''}>${v.label}</option>`).join('')}</select></div>
+    <div class="field"><label for="bk">Distance (km)</label><input id="bk" type="number" min="0" value="10"></div>
+    <div class="field"><label for="btech">Technician</label><select id="btech">${techs().map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></div>
+    <button class="btn" onclick="showBookSlots()">Find slots on ${dayLabel(selDay)}</button></div><div class="slots" id="bs"></div></div></div>`;
+}
+function showBookSlots(){
+  const name=document.getElementById('bc').value.trim(); if(!name){ toast('Enter a customer name.'); return; }
+  const type=document.getElementById('bt').value, dist=parseFloat(document.getElementById('bk').value)||0, tech=document.getElementById('btech').value;
+  bookPrefill=name; const s=slotsFor(tech,selDay,type,dist);
+  document.getElementById('bs').innerHTML=s.length?s.slice(0,16).map(m=>`<button class="chip" onclick="doBook('${tech}',${m},'${type}',${dist})">${fmtMin(m)}</button>`).join(''):'<span class="muted small">No valid slots. The day is full, closed, or already past.</span>';
+}
+function doBook(tech,start,type,dist){ const c=findOrCreate(bookPrefill); const j=createJob({custId:c.id,techId:tech,date:selDay,startMin:start,type,dist,quoteId:bookRes?.quoteId}); if(j){ bookPrefill=''; bookRes=null; toast('Booked.'); save(); render(); } }
+
+/* ============ PIPELINE ============ */
+function vPipeline(){
+  const imp=important(), pend=state.queue.filter(e=>e.status==='pending'), rest=state.queue.filter(e=>e.status!=='pending').slice(-8).reverse();
+  return `<h1>Pipeline</h1><p class="lede">Every lead from first contact to finished job. Email sequences keep following up, the bot replies and books, and the AI rep tells you what matters most today.</p>
+  <div class="panel"><div class="ph"><div><h2>What is important</h2><p>Ranked from the current leads, quotes, messages and bookings.</p></div></div><div class="pb">${imp.length?imp.map(attRow).join(''):'<div class="empty">Nothing needs attention.</div>'}</div></div>
+  <div class="panel"><div class="ph"><h2>Leads</h2></div><div class="pb"><div class="board">
+    ${STAGES.map(([k,l])=>{const ls=state.leads.filter(x=>x.stage===k);return `<div class="colm"><h3><span>${l}</span><span class="muted">${ls.length}</span></h3>${ls.map(x=>{const dwell=STAGE_DWELL[x.stage];const age=Math.floor((now()-new Date(x.lastTouch||x.createdAt))/864e5);const stale=dwell&&age>=dwell;return `<div class="lead"><div class="nm"><span>${esc(custName(x.customerId))}</span>${x.urgent?'<span class="pill urgent">urgent</span>':''}${stale?`<span class="pill urgent">${age}d, over ${dwell}d limit</span>`:''}</div><div class="muted small">${esc(x.source)}, ${ago(x.createdAt)} ago</div><div class="small">${esc(x.note.slice(0,70))}</div><select aria-label="Move stage" onchange="moveLead('${x.id}',this.value)">${STAGES.map(([s,n])=>`<option value="${s}" ${x.stage===s?'selected':''}>${n}</option>`).join('')}<option value="lost">Lost</option></select></div>`;}).join('')||'<div class="muted small">Empty</div>'}</div>`;}).join('')}
+  </div></div></div>
+  <div class="cols"><div class="panel"><div class="ph"><div><h2>Email sequences</h2><p>Each step passes the same consent gate as every other message.</p></div></div><div class="pb">
+    ${SEQS.map(s=>`<div class="seq"><div><b>${s.name}</b><div class="muted small">${s.rule}</div></div><label class="toggle"><input type="checkbox" ${state.settings.seq[s.id]?'checked':''} onchange="state.settings.seq['${s.id}']=this.checked;save()"> On</label></div>`).join('')}
+    <div style="margin-top:12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap"><label class="toggle"><input type="checkbox" ${state.settings.autoApprove?'checked':''} onchange="setSetting('autoApprove',this.checked)"> Approve automatically</label><button class="btn ghost sm" onclick="scan();render()">Check for due messages</button></div></div></div>
+  <div class="panel"><div class="ph"><div><h2>Bot auto-reply and booking</h2><p>What the bot does with new leads.</p></div></div><div class="pb">
+    <label class="toggle" style="margin-bottom:8px"><input type="checkbox" ${state.settings.botReply?'checked':''} onchange="setSetting('botReply',this.checked)"> Reply to new leads straight away</label>
+    <label class="toggle"><input type="checkbox" ${state.settings.autoBook?'checked':''} onchange="setSetting('autoBook',this.checked)"> Book the first open slot without asking</label>
+    <p class="muted small" style="margin-top:12px">With auto-book off, the bot offers the earliest slot and books when the customer replies YES.</p></div></div></div>
+  <div class="panel"><div class="ph"><div><h2>Sequence queue</h2><p>${pend.length} waiting for approval.</p></div>${pend.length?'<button class="btn sm" onclick="approveAll()">Approve all</button>':''}</div><div class="pb tblwrap">
+    ${pend.length||rest.length?`<table><tr><th>Customer</th><th>Sequence</th><th>Message</th><th>Status</th><th></th></tr>${[...pend,...rest].map(e=>`<tr><td>${esc(custName(e.customerId))}</td><td>${e.seq==='commitment'?'Commitment'+(e.dueAt?' (due '+dayLabel(dISO(new Date(e.dueAt)))+')':''):esc(SEQS.find(s=>s.id===e.seq)?.name||e.seq)}<div class="muted small">${e.kind}</div></td><td class="small">${esc(e.body)}</td><td>${e.status==='pending'?(e.seq==='commitment'&&e.dueAt&&new Date(e.dueAt)<now()?pill('urgent').replace('urgent','overdue'):pill('warn').replace('warn','waiting')):e.outcome==='block'?pill('blocked'):e.outcome==='hold'?pill('held'):e.outcome==='completed'?pill('ok').replace('ok','done'):pill('sent')}${e.reason?'<div class="muted small">'+esc(e.reason)+'</div>':''}</td><td><div class="acts">${e.status==='pending'?(e.seq==='commitment'?`<button class="btn sm" onclick="completeCommitment('${e.id}')">Mark done</button><button class="btn ghost sm" onclick="discardEntry('${e.id}')">Discard</button>`:`<button class="btn sm" onclick="approveEntry('${e.id}')">Approve</button><button class="btn ghost sm" onclick="discardEntry('${e.id}')">Discard</button>`):e.status==='blocked'?`<button class="btn ghost sm" onclick="retryEntry('${e.id}')">Retry</button><button class="btn ghost sm" onclick="discardEntry('${e.id}')">Discard</button>`:''}</div></td></tr>`).join('')}</table>`:'<div class="empty">Nothing queued. Advance the clock to see reminders and follow-ups fall due.</div>'}
+  </div></div>`;
+}
+
+/* ============ SETTINGS / RULES ============ */
+function cycleConsent(id,ch){ const c=cust(id); const order=['unknown','in','out']; c.consent[ch]=order[(order.indexOf(c.consent[ch])+1)%3]; if(c.consent[ch]==='out') emit('OptOut',c.name+' opted out of '+ch); save(); render(); }
+function setBiz(k,v){ state.biz[k]=v; save(); syncOrgSettings(); render(); }
+let orgSyncTimer=null;
+function syncOrgSettings(){
+  if(!supabase||!orgId) return;
+  clearTimeout(orgSyncTimer);
+  orgSyncTimer=setTimeout(async ()=>{
+    const b=state.biz;
+    const { error } = await supabase.from('organizations').update({
+      work_start:b.workStart, work_end:b.workEnd, quiet_start:b.quietStart, quiet_end:b.quietEnd,
+      buffer:b.buffer, closed_days:b.closedDays, settings:state.settings
+    }).eq('id', orgId);
+    if(error) console.error('Business settings sync failed', error);
+  }, 800);
+}
+function resetDemo(){
+  if(supabase && orgId){
+    // Logged into a real account — "reset" means reload the real cloud data,
+    // never overwrite it with fake seed data (which would look like everything
+    // got deleted and wipe it from Supabase too).
+    toast('Reloading your real data from the cloud…');
+    loadLiveData().then(render);
+    return;
+  }
+  state=seed(); chat=null; activeThread=null; draft={customer:'',type:'repair',items:null,range:false,reviseOf:null,channel:''}; selDay=null; save(); render(); toast('Demo data reset.');
+}
+function vSystem(){
+  const b=state.biz;
+  const FEATURE_INFO = {
+    realMessaging: {label:'Real SMS/Email sending', hint:'Needs a funded SMS/email provider — not built yet.'},
+    aiInsights: {label:'AI insights assistant', hint:'Live — the floating assistant on every screen.'}
+  };
+  const feat = state.settings.features || {};
+  return `<h1>Settings and rules</h1><p class="lede">The shared foundation every module uses: one business profile, one list of people, one customer record with consent, one job lifecycle and one event log.</p>
+  <div class="cols"><div class="panel"><div class="ph"><h2>Business</h2></div><div class="pb">
+    <div class="row"><div class="field"><label>Name</label><input value="${esc(b.name)}" disabled></div><div class="field"><label>Timezone</label><input value="${esc(b.tz)}" disabled></div></div>
+    <div class="row" style="margin-top:10px"><div class="field"><label for="bw1">Work day starts</label><input id="bw1" type="time" value="${fmtMin(b.workStart)}" onchange="setBiz('workStart',tmin(this.value))"></div><div class="field"><label for="bw2">Work day ends</label><input id="bw2" type="time" value="${fmtMin(b.workEnd)}" onchange="setBiz('workEnd',tmin(this.value))"></div></div>
+    <div class="row" style="margin-top:10px"><div class="field"><label for="bq1">Quiet hours start</label><input id="bq1" type="time" value="${fmtMin(b.quietStart)}" onchange="setBiz('quietStart',tmin(this.value))"></div><div class="field"><label for="bq2">Quiet hours end</label><input id="bq2" type="time" value="${fmtMin(b.quietEnd)}" onchange="setBiz('quietEnd',tmin(this.value))"></div><div class="field"><label for="bb">Buffer (min)</label><input id="bb" type="number" min="0" value="${b.buffer}" onchange="setBiz('buffer',parseInt(this.value)||0)"></div></div>
+    <p class="muted small" style="margin-top:10px">Currency ${b.currency}, VAT ${Math.round(b.vat*100)}%, deposit ${Math.round(b.depositRate*100)}%. Closed on Sundays.</p></div></div>
+  <div class="panel"><div class="ph"><h2>Email (Gmail)</h2><p class="muted small">Reading connects to your own Gmail account. Sending opens a Gmail compose window from Messages instead of going through this app.</p></div><div class="pb">
+    ${gmailConn.connected ? `<p>Connected as <b>${esc(gmailConn.email)}</b>.</p><div style="display:flex;gap:8px"><button class="btn ghost sm" onclick="syncGmail()">Refresh inbox now</button>${profile?.role==='owner'?`<button class="btn ghost sm" onclick="disconnectGmail()">Disconnect</button>`:''}</div>`
+    : `<div class="empty" style="text-align:left;padding:12px 0">${profile?.role==='owner'?`Not connected yet. <button class="btn sm" style="margin-top:8px" onclick="connectGmail()">Connect Gmail</button>`:'Not connected yet. Ask the account owner to connect Gmail.'}</div>`}
+  </div></div>
+  <div class="panel"><div class="ph"><h2>Features</h2><p class="muted small">Switch capabilities on or off for this account as they get funded/built — nothing here needs a redeploy.</p></div><div class="pb">
+    <table><tr><th>Feature</th><th></th><th>Status</th></tr>${Object.keys(FEATURE_INFO).map(k=>`<tr><td>${esc(FEATURE_INFO[k].label)}<div class="muted small">${esc(FEATURE_INFO[k].hint)}</div></td><td><label class="toggle"><input type="checkbox" ${feat[k]?'checked':''} onchange="setFeature('${k}',this.checked)"></label></td><td>${feat[k]?pill('ok').replace('>ok<','>On<'):pill('').replace('><','>Off<')}</td></tr>`).join('')}</table>
+  </div></div>
+  <div class="panel"><div class="ph"><h2>People and roles</h2></div><div class="pb">
+    <table><tr><th>Name</th><th>Role</th></tr>${state.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${pill(u.role==='owner'?'ok':u.role==='office'?'info':'').replace('>'+(u.role==='owner'?'ok':u.role==='office'?'info':'')+'<','>'+u.role+'<')}</td></tr>`).join('')}</table>
+    ${pendingInvites.length?`<p class="muted small" style="margin-top:10px;margin-bottom:4px">Pending invites</p><table><tr><th>Email</th><th>Role</th><th></th></tr>${pendingInvites.map(i=>`<tr><td>${esc(i.email)}</td><td>${esc(i.role)}</td><td><div class="acts"><button class="btn ghost sm" onclick="copyInviteLink('${i.token}')">Copy link</button><button class="btn ghost sm" onclick="revokeInvite('${i.id}')">Revoke</button></div></td></tr>`).join('')}</table>`:''}
+    ${profile?.role==='owner'?`<div class="row" style="margin-top:12px"><div class="field"><label for="invEmail">Invite by email</label><input id="invEmail" type="email" placeholder="name@example.com"></div><div class="field"><label for="invRole">Role</label><select id="invRole"><option value="office">Office</option><option value="technician">Technician</option></select></div><div class="field" style="align-self:flex-end"><button class="btn sm" onclick="sendInvite(document.getElementById('invEmail').value,document.getElementById('invRole').value)">Send invite</button></div></div><p class="muted small" style="margin-top:6px">Generates a one-time link (copied to your clipboard) — send it to them yourself for now, since real email sending for invites isn't wired up yet.</p>`:''}
+    <p class="muted small" style="margin-top:10px">Technicians appear in the Calendar. Staff appear in Messages.</p></div></div></div>
+  <div class="panel"><div class="ph"><div><h2>Customer consent</h2><p>Tap a chip to cycle between opted in, unknown and opted out. The gate reads this on every send. Not legal advice: check POPIA and WhatsApp Business rules before going live.</p></div></div><div class="pb tblwrap"><table><tr><th>Customer</th><th>Preferred</th><th>SMS</th><th>WhatsApp</th><th>Email</th></tr>${state.customers.map(c=>`<tr><td>${esc(c.name)}</td><td>${c.pref}</td>${['sms','whatsapp','email'].map(ch=>`<td><button class="chip" onclick="cycleConsent('${c.id}','${ch}')">${c.consent[ch]==='in'?'opted in':c.consent[ch]==='out'?'opted out':'unknown'}</button></td>`).join('')}</tr>`).join('')}</table></div></div>
+  <div class="cols"><div class="panel"><div class="ph"><h2>Sending rules</h2></div><div class="pb small">
+    <p style="margin-top:0">Every outbound customer message is one of three kinds and passes the gate in order:</p>
+    <p><b>Reply</b> answers something the customer sent. Blocked only if they opted out.</p>
+    <p><b>Transactional</b> covers bookings, reminders and quotes. Blocked on opt-out, held during quiet hours.</p>
+    <p><b>Marketing</b> covers rebooking nudges. Also needs an explicit opt-in for that channel.</p>
+    <p>WhatsApp outside 24 hours of the customer's last message goes out as an approved template. An inbound STOP opts the customer out everywhere.</p></div></div>
+  <div class="panel"><div class="ph"><h2>Job lifecycle</h2></div><div class="pb small">
+    <p style="margin-top:0">One Job record for its whole life. Allowed moves:</p>
+    ${Object.entries(TRANSITIONS).map(([k,v])=>`<div style="padding:5px 0;border-bottom:1px solid var(--line)">${pill(k)} ${v.length?'can become '+v.map(x=>x.replace('_',' ')).join(', '):'is final'}</div>`).join('')}
+    <p class="muted" style="margin-bottom:0">Completed and no-show need the start time to have passed. Rescheduling keeps the same job and resets it to booked.</p></div></div></div>
+  <div class="panel"><div class="ph"><div><h2>Event log</h2><p>Modules talk through these events instead of reaching into each other.</p></div><button class="btn danger sm" onclick="arm('reset',resetDemo)">${armLabel('reset','Reset demo data','Really reset?')}</button></div><div class="pb tblwrap">${state.events.length?`<table><tr><th>When</th><th>Event</th><th>Detail</th></tr>${state.events.slice(0,40).map(e=>`<tr><td>${fmtDT(e.at)}</td><td>${esc(e.type)}</td><td>${esc(e.text)}</td></tr>`).join('')}</table>`:'<div class="empty">No events yet.</div>'}</div></div>`;
+}
+function tmin(v){ const [h,m]=v.split(':').map(Number); return h*60+m; }
+
+/* ============ ROUTER ============ */
+const VIEWS={dashboard:vDashboard,quoting:vQuoting,messages:vMessages,calendar:vCalendar,pipeline:vPipeline,system:vSystem};
+function render(){
+  document.getElementById('custList').innerHTML=state.customers.map(c=>`<option value="${esc(c.name)}">`).join('');
+  document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('on',b.dataset.tab===TAB));
+  document.getElementById('nowLabel').textContent=fmtDT(state.simNow);
+  const badge=(id,n,red)=>{ const e=document.getElementById(id); e.hidden=!n; e.textContent=n; e.classList.toggle('red',!!red); };
+  badge('bMsg',state.messages.filter(m=>m.dir==='in'&&!m.read&&m.thread==='customer').length);
+  badge('bPipe',state.queue.filter(e=>e.status==='pending').length);
+  badge('bQuote',state.leads.filter(l=>l.quoteRequested&&!['completed','lost'].includes(l.stage)&&!state.quotes.some(q=>q.customerId===l.customerId&&['sent','accepted','draft'].includes(q.status))).length);
+  const keep=document.activeElement&&document.activeElement.id; const val=keep?document.activeElement.value:null;
+  document.getElementById('view').innerHTML=VIEWS[TAB]();
+  if(keep&&['bd','sj','sr','chatIn','qc'].includes(keep)){ const e=document.getElementById(keep); if(e){ e.focus(); if(val!=null&&e.value===val&&e.setSelectionRange){ try{ e.setSelectionRange(val.length,val.length);}catch(_){} } } }
+  const lg=document.getElementById('chatLog'); if(lg) lg.scrollTop=lg.scrollHeight;
+  const bb=document.querySelector('.bubbles'); if(bb) bb.scrollTop=bb.scrollHeight;
+  save();
+}
+/* ============ LIVE DATA (Supabase) ============ */
+let supabase, session, orgId, profile, bizMode='live';
+
+async function initApp(){
+  const view = document.getElementById('view');
+  view.innerHTML = '<div class="empty">Loading your account…</div>';
+
+  const mod = await import('./supabaseClient.js');
+  supabase = mod.supabase;
+
+  const { data: sessData } = await supabase.auth.getSession();
+  session = sessData.session;
+  if(!session){ window.location.href = './auth.html'; return; }
+
+  const { data: prof, error: profErr } = await supabase
+    .from('profiles')
+    .select('*, organizations(*)')
+    .eq('id', session.user.id)
+    .single();
+
+  if(profErr || !prof){
+    view.innerHTML = '<div class="empty">Could not load your account. Try logging in again.</div>';
+    return;
+  }
+  profile = prof; orgId = prof.org_id;
+  const org = prof.organizations;
+  document.getElementById('orgLabel').textContent = org?.name || '';
+
+  if(org){
+    state.biz = {
+      name: org.name, tz: org.tz, currency: org.currency, vat: org.vat, depositRate: org.deposit_rate,
+      workStart: org.work_start, workEnd: org.work_end, quietStart: org.quiet_start, quietEnd: org.quiet_end,
+      buffer: org.buffer, speed: org.speed, closedDays: org.closed_days||[0]
+    };
+    state.settings = org.settings || state.settings;
+    bizMode = state.settings.mode === 'demo' ? 'demo' : 'live';
+  }
+
+  if(bizMode==='live'){
+    // Real deployed mode: the clock is just... the actual clock. No manual advancing.
+    state.simNow = new Date().toISOString();
+    setInterval(()=>{ state.simNow = new Date().toISOString(); scan(); render(); }, 60000);
+    document.getElementById('advanceControls').style.display='none';
+    document.getElementById('clockModeLabel').textContent='current time';
+  }
+
+  await loadLiveData();
+  refreshGmailStatus();
+  const qp = new URLSearchParams(window.location.search);
+  if(qp.get('gmail')==='connected'){ toast('Gmail connected.'); history.replaceState({},'',window.location.pathname); }
+  else if(qp.get('gmail')==='error'){ toast('Gmail connection failed — try again.'); history.replaceState({},'',window.location.pathname); }
+  scan(); render();
+}
+
+async function loadLiveData(){
+  const [custs, jobs, leads, quotes, messages, queue, team, invites, events] = await Promise.all([
+    supabase.from('customers').select('*'),
+    supabase.from('jobs').select('*'),
+    supabase.from('leads').select('*'),
+    supabase.from('quotes').select('*'),
+    supabase.from('messages').select('*').eq('thread','customer'),
+    supabase.from('message_queue').select('*'),
+    supabase.from('profiles').select('id,name,role'),
+    supabase.from('invites').select('*').is('accepted_at', null).order('created_at', {ascending:false}),
+    supabase.from('events').select('*').order('at', {ascending:false}).limit(150)
+  ]);
+
+  if(custs.data) state.customers = custs.data.map(c=>({
+    id:c.id, name:c.name, phone:c.phone||'', email:c.email||'', pref:c.pref||'SMS',
+    consent:c.consent||{sms:'unknown',whatsapp:'unknown',email:'unknown'},
+    lastInbound:c.last_inbound||{}, avgInterval:c.avg_interval, avgValue:c.avg_value,
+    lastRebookAt:c.last_rebook_at
+  }));
+
+  if(jobs.data) state.jobs = jobs.data.map(j=>({
+    // NOTE: tech_id isn't loaded from the cloud yet — technician assignment
+    // isn't wired to real staff accounts. See the note in syncToCloud().
+    id:j.id, customerId:j.customer_id, techId:j.tech_id, date:j.date, startMin:j.start_min,
+    durMin:j.dur_min, type:j.type, dist:j.dist, driveMin:j.drive_min, status:j.status,
+    remindersSent:j.reminders_sent||[], completedAt:j.completed_at, quoteId:j.quote_id
+  }));
+
+  if(leads.data) state.leads = leads.data.map(l=>({
+    id:l.id, customerId:l.customer_id, source:l.source, stage:l.stage, note:l.note||'',
+    urgent:!!l.urgent, type:l.type||'repair', createdAt:l.created_at, lastTouch:l.last_touch,
+    offer:l.offer, quoteRequested:!!l.quote_requested, nurtured:l.nurtured||[], lossReason:l.loss_reason||null
+  }));
+
+  if(quotes.data) state.quotes = quotes.data.map(q=>({
+    id:q.id, customerId:q.customer_id, leadId:q.lead_id, type:q.type, items:q.items||[],
+    version:q.version, status:q.status, createdAt:q.created_at, sentAt:q.sent_at,
+    followUps:q.follow_ups||[], isRange:!!q.is_range
+  }));
+
+  // Keep any local staff-thread messages (internal notes) — those aren't synced yet —
+  // and replace customer-thread messages with the real synced ones.
+  const staffMsgs = state.messages.filter(m=>m.thread==='staff');
+  const custMsgs = (messages.data||[]).map(m=>({
+    id:m.id, thread:'customer', customerId:m.customer_id, dir:m.dir, channel:m.channel,
+    subject:m.subject||'', body:m.body, at:m.at, status:m.status, reason:m.reason||'',
+    template:!!m.template, sendAt:m.send_at, kind:m.kind, tag:m.tag||'', read:!!m.read
+  }));
+  state.messages = [...staffMsgs, ...custMsgs];
+
+  if(queue.data) state.queue = queue.data.map(e=>({
+    id:e.id, key:e.key, seq:e.seq, customerId:e.customer_id, relatedId:e.related_id,
+    body:e.body, subject:e.subject||'', kind:e.kind, status:e.status, createdAt:e.created_at,
+    outcome:e.outcome, reason:e.reason||'', dueAt:e.due_at||null
+  }));
+
+  // Real team members replace the old fake demo users entirely — booking,
+  // technician assignment and staff messages all use this list from here on.
+  if(team.data) state.users = team.data.map(p=>({id:p.id, name:p.name, role:p.role}));
+  pendingInvites = invites.data || [];
+
+  if(events.data) state.events = events.data.map(e=>({id:e.id, at:e.at, type:e.type, text:e.text, ref:e.ref}));
+
+  // Remember what's already in the cloud, so future saves know what got
+  // removed locally (discarded queue entries, etc.) and delete it remotely too.
+  lastSynced = {
+    customers: new Set(state.customers.map(c=>c.id)),
+    jobs: new Set(state.jobs.map(j=>j.id)),
+    leads: new Set(state.leads.map(l=>l.id)),
+    quotes: new Set(state.quotes.map(q=>q.id)),
+    messages: new Set(custMsgs.map(m=>m.id)),
+    queue: new Set(state.queue.map(e=>e.id)),
+    events: new Set(state.events.map(e=>e.id))
+  };
+}
+
+/* ---- push local changes up to Supabase, and delete anything removed locally ---- */
+let lastSynced = {customers:new Set(),jobs:new Set(),leads:new Set(),quotes:new Set(),messages:new Set(),queue:new Set(),events:new Set()};
+let syncing = false, syncQueued = false;
+let pendingInvites = [];
+
+async function sendInvite(email, role){
+  email = (email||'').trim().toLowerCase();
+  if(!email){ toast('Enter an email address.'); return; }
+  if(!['office','technician'].includes(role)){ toast('Pick a role.'); return; }
+  const { data, error } = await supabase.from('invites').insert({ org_id: orgId, email, role }).select().single();
+  if(error){ toast('Could not create invite: '+error.message); return; }
+  pendingInvites = [data, ...pendingInvites];
+  render();
+  const link = window.location.origin + '/auth.html?invite=' + data.token;
+  navigator.clipboard?.writeText(link).catch(()=>{});
+  toast('Invite link copied to clipboard — send it to '+email+'.');
+}
+async function revokeInvite(id){
+  const { error } = await supabase.from('invites').delete().eq('id', id);
+  if(error){ toast('Could not revoke invite.'); return; }
+  pendingInvites = pendingInvites.filter(i=>i.id!==id);
+  render();
+}
+function copyInviteLink(token){
+  const link = window.location.origin + '/auth.html?invite=' + token;
+  navigator.clipboard?.writeText(link).catch(()=>{});
+  toast('Invite link copied.');
+}
+
+async function syncTable(table, rows, mapFn, key){
+  const validRows = rows.filter(r=>isUUID(r.id));
+  const currentIds = new Set(validRows.map(r=>r.id));
+  const toDelete = [...lastSynced[key]].filter(id=>!currentIds.has(id));
+  if(validRows.length){
+    const { error } = await supabase.from(table).upsert(validRows.map(mapFn));
+    if(error) console.error('Sync failed for '+table, error);
+  }
+  if(toDelete.length){
+    const { error } = await supabase.from(table).delete().in('id', toDelete);
+    if(error) console.error('Cloud delete failed for '+table, error);
+  }
+  lastSynced[key] = currentIds;
+}
+
+async function syncToCloud(){
+  if(!supabase || !orgId) return;
+  if(syncing){ syncQueued = true; return; }
+  syncing = true;
+  try{
+    // Sequential, in dependency order (customers -> leads -> quotes -> jobs -> messages -> queue),
+    // since quotes reference leads and jobs reference quotes via foreign keys.
+    await syncTable('customers', state.customers, c=>({
+      id:c.id, org_id:orgId, name:c.name, phone:c.phone||'', email:c.email||'', pref:c.pref||'SMS',
+      consent:c.consent, last_inbound:c.lastInbound||{}, avg_interval:c.avgInterval,
+      avg_value:c.avgValue, last_rebook_at:c.lastRebookAt||null
+    }), 'customers');
+
+    await syncTable('leads', state.leads.filter(l=>isUUID(l.customerId)), l=>({
+      id:l.id, org_id:orgId, customer_id:l.customerId, source:l.source||'', stage:l.stage,
+      note:l.note||'', urgent:!!l.urgent, type:l.type||'repair', created_at:l.createdAt,
+      last_touch:l.lastTouch||null, offer:l.offer||null, quote_requested:!!l.quoteRequested,
+      loss_reason:l.lossReason||null,
+      nurtured:l.nurtured||[]
+    }), 'leads');
+
+    await syncTable('quotes', state.quotes.filter(q=>isUUID(q.customerId)), q=>({
+      id:q.id, org_id:orgId, customer_id:q.customerId, lead_id:isUUID(q.leadId)?q.leadId:null,
+      type:q.type, items:q.items||[], version:q.version||1, status:q.status,
+      created_at:q.createdAt, sent_at:q.sentAt||null, follow_ups:q.followUps||[], is_range:!!q.isRange
+    }), 'quotes');
+
+    await syncTable('jobs', state.jobs.filter(j=>isUUID(j.customerId)), j=>({
+      id:j.id, org_id:orgId, customer_id:j.customerId, tech_id:isUUID(j.techId)?j.techId:null,
+      date:j.date, start_min:j.startMin, dur_min:j.durMin, type:j.type, dist:j.dist,
+      drive_min:j.driveMin, status:j.status, reminders_sent:j.remindersSent||[],
+      completed_at:j.completedAt||null, quote_id:isUUID(j.quoteId)?j.quoteId:null
+    }), 'jobs');
+
+    await syncTable('messages', state.messages.filter(m=>m.thread==='customer' && isUUID(m.customerId)), m=>({
+      id:m.id, org_id:orgId, thread:'customer', customer_id:m.customerId, dir:m.dir,
+      channel:m.channel, subject:m.subject||'', body:m.body, at:m.at, status:m.status,
+      reason:m.reason||'', template:!!m.template, send_at:m.sendAt||null, kind:m.kind||null,
+      tag:m.tag||'', read:!!m.read
+    }), 'messages');
+
+    await syncTable('message_queue', state.queue.filter(e=>isUUID(e.customerId)), e=>({
+      id:e.id, org_id:orgId, key:e.key, seq:e.seq, customer_id:e.customerId,
+      related_id:e.relatedId||null, body:e.body, subject:e.subject||'', kind:e.kind||null,
+      status:e.status, created_at:e.createdAt, outcome:e.outcome||null, reason:e.reason||'', due_at:e.dueAt||null
+    }), 'queue');
+
+    // Events are insert-only: the local array is capped at 150 for display,
+    // so diffing it like the other tables would delete older cloud history
+    // every time the cap rolls old ones out of memory. Just add new ones.
+    const newEvents = state.events.filter(e=>isUUID(e.id) && !lastSynced.events.has(e.id));
+    if(newEvents.length){
+      const { error } = await supabase.from('events').insert(newEvents.map(e=>({
+        id:e.id, org_id:orgId, at:e.at, type:e.type, text:e.text, ref:isUUID(e.ref)?e.ref:null
+      })));
+      if(error) console.error('Sync failed for events', error);
+      else newEvents.forEach(e=>lastSynced.events.add(e.id));
+    }
+    setSaveNote('Saved');
+  } catch(err){
+    console.error('Cloud sync error', err);
+    setSaveNote('Sync error — check connection');
+  } finally {
+    syncing = false;
+    if(syncQueued){ syncQueued = false; syncToCloud(); }
+  }
+}
+
+async function logout(){
+  await supabase.auth.signOut();
+  window.location.href = './auth.html';
+}
+
+initApp();
+</script>
+</body>
+</html>
