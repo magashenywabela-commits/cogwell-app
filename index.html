@@ -4,30 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cogwell Solutions — Command Center</title>
+<link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#ECEFEC; --surface:#FAFBFA; --sunk:#E1E6E2; --ink:#12201F; --soft:#586866; --line:#D3DAD6;
-  --brand:#0F5A57; --brand-ink:#FFFFFF; --brass:#A96F12; --brass-bg:#F6EBD3;
+  --bg:#EEF2F8; --surface:#FFFFFF; --sunk:#E4EAF3; --ink:#101828; --soft:#5B6B85; --line:#D8E0EC;
+  --brand:#1E4B8C; --brand-ink:#FFFFFF; --accent:#2F6FE0; --accent-ink:#FFFFFF; --brass:#B7791F; --brass-bg:#FBF0D9;
   --ok:#22703F; --ok-bg:#DDEEE3; --bad:#A63A2C; --bad-bg:#F5E0DC; --info:#2B5E8C; --info-bg:#DEE9F3;
-  --side:#0E2726; --side-ink:#DCE8E5; --side-soft:#8FA9A5;
+  --side:#0B213F; --side-ink:#E6ECF7; --side-soft:#8FA3C4;
   box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#0F1817; --surface:#162221; --sunk:#1D2C2B; --ink:#E9F0EE; --soft:#9AAFAB; --line:#2A3D3B;
-    --brand:#4FB8B0; --brand-ink:#0B1615; --brass:#E0AE55; --brass-bg:#31281A;
-    --ok:#6FCB9F; --ok-bg:#1B2C23; --bad:#F0776A; --bad-bg:#2E1E1B; --info:#7EB3DE; --info-bg:#1B2833;
-    --side:#0A1A19; --side-ink:#DCE8E5; --side-soft:#7E9995;
+    --bg:#0B1220; --surface:#111A2C; --sunk:#182541; --ink:#E8EDF7; --soft:#8FA0C0; --line:#22304C;
+    --brand:#5B8DEF; --brand-ink:#0B1220; --accent:#6FA8FF; --accent-ink:#0B1220; --brass:#E8B54A; --brass-bg:#2E2412;
+    --ok:#6FCB9F; --ok-bg:#12291F; --bad:#F0776A; --bad-bg:#2E1E1B; --info:#7EB3DE; --info-bg:#16273A;
+    --side:#070E1B; --side-ink:#E6ECF7; --side-soft:#6E85AC;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0F1817; --surface:#162221; --sunk:#1D2C2B; --ink:#E9F0EE; --soft:#9AAFAB; --line:#2A3D3B;
-  --brand:#4FB8B0; --brand-ink:#0B1615; --brass:#E0AE55; --brass-bg:#31281A;
-  --ok:#6FCB9F; --ok-bg:#1B2C23; --bad:#F0776A; --bad-bg:#2E1E1B; --info:#7EB3DE; --info-bg:#1B2833;
-  --side:#0A1A19; --side-ink:#DCE8E5; --side-soft:#7E9995;
+  --bg:#0B1220; --surface:#111A2C; --sunk:#182541; --ink:#E8EDF7; --soft:#8FA0C0; --line:#22304C;
+  --brand:#5B8DEF; --brand-ink:#0B1220; --accent:#6FA8FF; --accent-ink:#0B1220; --brass:#E8B54A; --brass-bg:#2E2412;
+  --ok:#6FCB9F; --ok-bg:#12291F; --bad:#F0776A; --bad-bg:#2E1E1B; --info:#7EB3DE; --info-bg:#16273A;
+  --side:#070E1B; --side-ink:#E6ECF7; --side-soft:#6E85AC;
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
@@ -37,19 +38,17 @@ button{font:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 .shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
 .side{background:var(--side);color:var(--side-ink);padding:22px 12px;display:flex;flex-direction:column;gap:2px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh;align-self:start}
-.brand{display:flex;align-items:center;gap:10px;padding:0 10px 22px}
-.cog{width:28px;height:28px;flex:none}
-.brand b{font:700 16px 'Bricolage Grotesque';display:block;line-height:1.1}
-.brand span{font-size:11.5px;color:var(--side-soft)}
-.nav{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:transparent;color:var(--side-ink);padding:9px 10px 9px 12px;border-radius:6px;border-left:3px solid transparent;font-weight:500}
+.brand{display:flex;align-items:center;padding:0 10px 22px}
+.brand-logo{width:100%;max-width:150px;height:auto;filter:brightness(0) invert(1)}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:transparent;color:var(--side-ink);padding:9px 10px 9px 12px;border-radius:6px;border-left:3px solid transparent;font-weight:500;transition:background .12s ease,border-color .12s ease}
 .nav:hover{background:rgba(255,255,255,.06)}
-.nav.on{background:rgba(255,255,255,.1);border-left-color:#D9A441}
+.nav.on{background:rgba(255,255,255,.1);border-left-color:var(--accent)}
 .nav.sub{color:var(--side-soft);font-size:13px}
 .sep{height:1px;background:rgba(255,255,255,.1);margin:12px 6px}
-.badge{background:#D9A441;color:#1a1408;border-radius:9px;font-size:11px;font-weight:600;padding:1px 7px}
+.badge{background:var(--accent);color:var(--accent-ink);border-radius:9px;font-size:11px;font-weight:600;padding:1px 7px}
 .badge.red{background:#E5776A;color:#2a0d09}
 .main{min-width:0}
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 24px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 24px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5;box-shadow:0 1px 3px rgba(16,24,40,.03)}
 .clock{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:var(--soft);font-size:12.5px}
 .clock b{color:var(--ink);font-weight:600;margin-right:4px}
 .chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:5px;padding:3px 9px;font-size:12px}
@@ -59,14 +58,15 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 h1{font-size:26px;margin:0 0 2px;font-weight:700;letter-spacing:-.01em}
 .lede{color:var(--soft);margin:0 0 22px;max-width:70ch}
 h2{font-size:16px;margin:0;font-weight:700}
-.btn{background:var(--brand);color:var(--brand-ink);border:0;border-radius:5px;padding:8px 14px;font-weight:600;font-size:13px}
-.btn:hover{filter:brightness(1.08)}
+.btn{background:var(--brand);color:var(--brand-ink);border:0;border-radius:6px;padding:8px 14px;font-weight:600;font-size:13px;transition:filter .12s ease,transform .12s ease}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:translateY(1px)}
 .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
 .btn.ghost:hover{border-color:var(--brand);color:var(--brand)}
 .btn.sm{padding:4px 10px;font-size:12px}
 .btn.danger{background:var(--bad);color:#fff}
 .btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:18px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:18px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
 .ph{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:13px 18px;border-bottom:1px solid var(--line)}
 .pb{padding:14px 18px}
 .ph p{margin:2px 0 0;color:var(--soft);font-size:12.5px}
@@ -190,7 +190,7 @@ tr:last-child td{border-bottom:0}
   .side{position:static;height:auto;flex-direction:row;overflow-x:auto;padding:10px;gap:4px}
   .brand,.sep{display:none}
   .nav{white-space:nowrap;width:auto;border-left:0;border-bottom:3px solid transparent}
-  .nav.on{border-bottom-color:#D9A441}
+  .nav.on{border-bottom-color:var(--accent)}
   .cols,.cols3,.msgwrap,.focus{grid-template-columns:1fr}
   .kpis,.stats{grid-template-columns:repeat(2,1fr)}
   .mods{grid-template-columns:1fr 1fr}
@@ -209,8 +209,7 @@ tr:last-child td{border-bottom:0}
 <div class="shell">
   <nav class="side" aria-label="Sections">
     <div class="brand">
-      <svg class="cog" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="7" fill="none" stroke="#D9A441" stroke-width="3"/><g stroke="#D9A441" stroke-width="4" stroke-linecap="butt"><path d="M16 2v5M16 25v5M2 16h5M25 16h5M6.1 6.1l3.5 3.5M22.4 22.4l3.5 3.5M25.9 6.1l-3.5 3.5M9.6 22.4l-3.5 3.5"/></g></svg>
-      <div><b>Cogwell</b><span>Solutions</span></div>
+      <img src="cogwell_logo_full.png" alt="Cogwell" class="brand-logo">
     </div>
     <button class="nav" data-tab="dashboard" onclick="setTab('dashboard')">Dashboard</button>
     <button class="nav" data-tab="quoting" onclick="setTab('quoting')">Quoting <span class="badge" id="bQuote" hidden></span></button>
